@@ -162,8 +162,11 @@ export default function DeathRaceLobbyPage() {
 
                         <div className="flex-grow-1">
 
-                            <div className="form-group articles mb-0">
+                            <div>
                                 <label htmlFor="nickname">Nickname</label>
+                            </div>
+
+                            <div className="form-group articles mb-0 w-100">
                                 {/* <SingleInput
                                     value={nickname}
                                     setValue={setNickname}
@@ -173,7 +176,7 @@ export default function DeathRaceLobbyPage() {
                                     autoComplete='off'
                                     // id={item_key}
                                     type="text"
-                                    className='text-center'
+                                    className='text-center w-100'
                                     // autoFocus={autoFocus && true}
                                     // onBlur={onBlur}
                                     // placeholder={placeholder}
@@ -224,11 +227,11 @@ export default function DeathRaceLobbyPage() {
 
                                         <div className='d-flex justify-content-between align-items-center w-100 mb-2'>
                                             <div className="mb-0" style={{ fontSize: '0.9rem' }}><b>Server {id}</b></div>
-                                            <div className='mb-0'>{lobbyLookup?.players?.length || 0}/4</div>
+                                            <div className='mb-0'>{lobbyLookup?.players?.length || 0}/2</div>
                                         </div>
 
-                                        <div className='d-flex justify-content-around w-100 mb-1'>
-                                            {[1, 2, 3, 4].map(player_count => {
+                                        <div className='d-flex justify-content-start w-100 mb-1'>
+                                            {[1, 2].map(player_count => {
 
                                                 let playerLookup = false
 
@@ -274,7 +277,7 @@ export default function DeathRaceLobbyPage() {
 
                         </div>
 
-                        <div className='small fw-bold  mt-3 mb-1'>Or</div>
+                        {/* <div className='small fw-bold  mt-3 mb-1'>Or</div> */}
 
                         {/* <div className='d-flex'>
 
@@ -355,6 +358,21 @@ export default function DeathRaceLobbyPage() {
                                 Leave Game
                             </ArticlesButton>
                         </Link> */}
+
+                        <a href="https://github.com/Articles-Joey/8-ball-pool" className='w-50' target="_blank" rel="noopener noreferrer">
+                            <ArticlesButton
+                                className={`w-100`}
+                                small
+                                onClick={() => {
+                                    setShowInfoModal({
+                                        game: game_name
+                                    })
+                                }}
+                            >
+                                <i className="fab fa-github"></i>
+                                Github
+                            </ArticlesButton>
+                        </a>
 
                         <ArticlesButton
                             className={`w-50`}

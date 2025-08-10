@@ -1,6 +1,6 @@
-# Battle Trap
+# 8 Ball Pool
 
-Battle trap is a single player and multiplayer game where you must last the longest in the board without coliding with another players trail. Inspired by Tron, players can move there player when it is their turn. 
+Same rules as traditional 8 ball pool. 
 
 ## Getting Started
 
@@ -14,17 +14,16 @@ npm run dev
 
 Aiming to have multiplayer via P2P and Websockets. Websocket backend code is not in this repo or available at this time. P2P code will be included here.
 
-## Board Game Version
-
-I originally made this game as a board game for my Game Design Merit Badge. Here are some files you can use to print and play!
-
-https://www.scouting.org/merit-badges/game-design/
-
-Color Board
-![Battle Trap Board](public/img/Board%20Game/board-with-background.webp)
-
-Black and White Board
-![Battle Trap Board](public/img/Board%20Game/board-without-background.webp)
-
-Instructions
-![Battle Trap Instructions](public/img/Board%20Game/Instructions.webp)
+## Attributions
+[8 Ball Icon](https://www.flaticon.com/free-icons/billiard)
+[Floor Texture](https://www.flaticon.com/free-icons/billiard)
+[Wall Texture](https://www.flaticon.com/free-icons/billiard)
+[Box Model](https://www.flaticon.com/free-icons/billiard)
+[Table Model](https://www.flaticon.com/free-icons/billiard)
+[Chair Model](https://www.flaticon.com/free-icons/billiard)
+[Couch Model](https://www.flaticon.com/free-icons/billiard)
+[Fire Model](https://www.flaticon.com/free-icons/billiard)
+[Ski Resort Photo](https://www.flaticon.com/free-icons/billiard)
+[Dart Board](https://www.flaticon.com/free-icons/billiard)
+[Shoes Model](https://www.flaticon.com/free-icons/billiard)
+[People Models](https://www.flaticon.com/free-icons/billiard)
