@@ -22,12 +22,14 @@ import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import LeftPanelContent from '../components/LeftPanel';
 import { useSocketStore } from '@/hooks/useSocketStore';
 import MenuBarControls from '../components/MenuBarControls';
+import { useEightBallStore } from '@/hooks/useEightBallStore';
+import TouchControls from '../components/TouchControls';
 
 const GameCanvas = dynamic(() => import('../components/GameCanvas'), {
     ssr: false,
 });
 
-export default function IceSlideGamePage() {
+export default function GamePage() {
 
     const {
         socket
@@ -67,7 +69,9 @@ export default function IceSlideGamePage() {
 
     const [showMenu, setShowMenu] = useState(false)
 
-    const [touchControlsEnabled, setTouchControlsEnabled] = useLocalStorageNew("game:touchControlsEnabled", false)
+    // const [touchControlsEnabled, setTouchControlsEnabled] = useLocalStorageNew("game:touchControlsEnabled", false)
+    const touchControls = useEightBallStore(state => state.touchControls);
+    const setTouchControls = useEightBallStore(state => state.setTouchControls);
 
     const [sceneKey, setSceneKey] = useState(0);
 
@@ -83,8 +87,8 @@ export default function IceSlideGamePage() {
     let panelProps = {
         server,
         players,
-        touchControlsEnabled,
-        setTouchControlsEnabled,
+        // touchControlsEnabled,
+        // setTouchControlsEnabled,
         reloadScene,
         // controllerState,
         isFullscreen,
@@ -130,10 +134,6 @@ export default function IceSlideGamePage() {
                 />
             </div>
 
-            {/* <TouchControls
-                touchControlsEnabled={touchControlsEnabled}
-            /> */}
-
             <div className='panel-left card rounded-0 d-none d-lg-flex'>
 
                 <LeftPanelContent
@@ -153,6 +153,10 @@ export default function IceSlideGamePage() {
             </div> */}
 
             <div className='canvas-wrap'>
+
+                <TouchControls 
+
+                />
 
                 <GameCanvas
                     key={sceneKey}

@@ -9,16 +9,18 @@ import ArticlesButton from "@/components/UI/Button";
 import { useSocketStore } from "@/hooks/useSocketStore";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dropdown, DropdownButton } from "react-bootstrap";
+
+import Peer from 'peerjs';
 
 export default function LeftPanelContent(props) {
 
     const {
         server,
         // players,
-        touchControlsEnabled,
-        setTouchControlsEnabled,
+        // touchControlsEnabled,
+        // setTouchControlsEnabled,
         reloadScene,
         controllerState,
         isFullscreen,
@@ -27,27 +29,22 @@ export default function LeftPanelContent(props) {
         setShowMenu
     } = props;
 
-    const {
-        socket,
-    } = useSocketStore(state => ({
-        socket: state.socket,
-    }));
+    // const {
+    //     socket,
+    // } = useSocketStore(state => ({
+    //     socket: state.socket,
+    // }));
 
-    const {
-        cueRotation,
-        setCueRotation,
-        cuePower,
-        setCuePower,
-        debug,
-        setDebug
-    } = useEightBallStore(state => ({
-        cueRotation: state.cueRotation,
-        setCueRotation: state.setCueRotation,
-        cuePower: state.cuePower,
-        setCuePower: state.setCuePower,
-        debug: state.debug,
-        setDebug: state.setDebug
-    }));
+    const cueRotation = useEightBallStore(state => state.cueRotation);
+    const setCueRotation = useEightBallStore(state => state.setCueRotation);
+    const cuePower = useEightBallStore(state => state.cuePower);
+    const setCuePower = useEightBallStore(state => state.setCuePower);
+    const debug = useEightBallStore(state => state.debug);
+    const setDebug = useEightBallStore(state => state.setDebug);
+    const ballPositions = useEightBallStore(state => state.ballPositions);
+
+    const touchControls = useEightBallStore(state => state.touchControls);
+    const setTouchControls = useEightBallStore(state => state.setTouchControls);
 
     const cueRotationRef = useRef(cueRotation);
     useEffect(() => {
@@ -94,6 +91,116 @@ export default function LeftPanelContent(props) {
     useHotkeys(['Enter'], () => {
         console.log("Launch?")
     });
+
+    const [connected, setConnected] = useState(false)
+    const connectionRef = useRef(null);
+    const [peerToConnect, setPeerToConnect] = useState('')
+
+    function connectToPeer(id) {
+
+        if (!peer) {
+            console.error('Peer not initialized yet!');
+            return;
+        }
+
+        console.log(`Attempting peer connection to ${id}`);
+        const connection = peer.connect(id);
+
+        connection.on('open', () => {
+            console.log(`Connection to ${id} established.`);
+            // setConn(connection); // Save the connection after it's open
+            connectionRef.current = connection;
+            connectionRef.current.send({
+                type: "Connection",
+                date: new Date,
+                peerId: peerRef?.current?._id
+            });
+            setConnected(true)
+
+            connectionRef.current.on('data', function (data) {
+                console.log('Received', data);
+            });
+
+        });
+
+        connection.on('data', (data) => {
+            console.log('Received data:', data); // Handle incoming data
+        });
+
+        connection.on('error', (err) => {
+            console.error('Connection error:', err);
+        });
+    }
+
+    function sendMessage() {
+        console.log("Test")
+
+        let data = {
+            type: "Message",
+            date: new Date(),
+            peerId: peerRef?.current?._id,
+            message: 'Test'
+        }
+
+        connectionRef.current.send({
+            ...data
+        });
+
+        // setMessages([
+        //     ...messages,
+        //     {
+        //         ...data
+        //     }
+        // ])
+
+        // setMessage('')
+    }
+
+    const [peer, setPeer] = useState(null);
+
+    const peerRef = useRef(null);
+
+    useEffect(() => {
+        if (peerRef.current) return; // Prevent double initialization in StrictMode
+
+        const newPeer = new Peer();
+        setPeer(newPeer);
+        peerRef.current = newPeer;
+
+        newPeer.on('open', (id) => {
+            console.log(`Peer ID: ${id}`);
+
+            // if (isHost) {
+            //     console.log('Hosting session...');
+            // } else {
+            //     console.log('Connecting to host...');
+            //     const conn = newPeer.connect('host-peer-id'); // Replace with the host's peer ID
+            //     conn.on('open', () => {
+            //         console.log('Connected to host');
+            //         conn.on('data', (data) => {
+            //             setBallsPositions(data);
+            //         });
+            //     });
+            // }
+
+        });
+
+        newPeer.on('connection', (conn) => {
+            console.log('New connection:', conn.peer);
+            // setConnections((prev) => [...prev, conn]);
+
+            // conn.on('data', (data) => {
+            //     console.log('Received data:', data);
+            //     setBallsPositions(data);
+            // });
+        });
+
+        return () => {
+            newPeer.destroy();
+        };
+    }, []);
+
+    const [showBallPositions, setShowBallPositions] = useState(false);
 
     return (
         <div className='w-100'>
@@ -195,6 +302,98 @@ export default function LeftPanelContent(props) {
                 </div>
             </div> */}
 
+            {/* Session Controls */}
+            <div
+                className="card card-articles card-sm"
+            >
+                <div className="card-body">
+
+                    <div className="small text-muted">Session Controls</div>
+
+                    <div className='d-flex flex-column'>
+
+                        <div
+                            style={{
+                                fontSize: '0.7rem!important',
+                            }}
+                        >
+                            {peerRef?.current?._id || "None"}
+                        </div>
+
+                        <input
+                            autoComplete='off'
+                            // id={item_key}
+                            type="text"
+                            className='text-center w-100'
+                            // autoFocus={autoFocus && true}
+                            // onBlur={onBlur}
+                            // placeholder={placeholder}
+                            value={peerToConnect}
+                            style={{
+                                fontSize: '0.7rem!important'
+                            }}
+                            // onKeyDown={onKeyDown}
+                            onChange={(e) => {
+                                setPeerToConnect(e.target.value)
+                            }}
+                        />
+
+                        <div>
+
+                            {!connected ?
+                                <ArticlesButton
+                                    size="sm"
+                                    className="w-100"
+                                    active={false}
+                                    onClick={() => {
+                                        // console.log('Connecting to host...');
+                                        // const conn = newPeer.connect('host-peer-id'); // Replace with the host's peer ID
+                                        // conn.on('open', () => {
+                                        //     console.log('Connected to host');
+                                        //     conn.on('data', (data) => {
+                                        //         setBallsPositions(data);
+                                        //     });
+                                        // });
+
+                                        connectToPeer(peerToConnect)
+                                    }}
+                                >
+                                    <i className="fad fa-redo"></i>
+                                    Connect
+                                </ArticlesButton>
+                                :
+                                <ArticlesButton
+                                    size="sm"
+                                    className="w-100"
+                                    active={false}
+                                    onClick={() => {
+                                        // setTouchControlsEnabled(true)
+                                    }}
+                                >
+                                    <i className="fad fa-redo"></i>
+                                    Disconnect
+                                </ArticlesButton>
+                            }
+
+                            <ArticlesButton
+                                size="sm"
+                                className="w-100"
+                                active={false}
+                                onClick={() => {
+                                    sendMessage()
+                                }}
+                            >
+                                <i className="fad fa-redo"></i>
+                                Test Message
+                            </ArticlesButton>
+                            
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
             {/* Touch Controls */}
             <div
                 className="card card-articles card-sm"
@@ -209,9 +408,9 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                active={!touchControlsEnabled}
+                                active={!touchControls}
                                 onClick={() => {
-                                    setTouchControlsEnabled(false)
+                                    setTouchControls(false)
                                 }}
                             >
                                 <i className="fad fa-redo"></i>
@@ -221,9 +420,9 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                active={touchControlsEnabled}
+                                active={touchControls}
                                 onClick={() => {
-                                    setTouchControlsEnabled(true)
+                                    setTouchControls(true)
                                 }}
                             >
                                 <i className="fad fa-redo"></i>
@@ -247,7 +446,24 @@ export default function LeftPanelContent(props) {
                     <div className="small border p-2">
                         <div>Rotation Angle: {cueRotation}</div>
                         <div>Power: {cuePower}/100</div>
+                        {/* <div>Ball Positions: {JSON.stringify(ballPositions)}</div> */}
                     </div>
+
+                    {showBallPositions && (
+                        <div
+                            className='small border p-2'
+                            style={{
+                                height: '200px',
+                                overflowY: 'auto'
+                            }}
+                        >
+                            {ballPositions.map((pos, index) => (
+                                <div key={index}>
+                                    Ball {pos.ball}: {JSON.stringify(pos.position)}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div className='d-flex flex-column'>
 
@@ -271,42 +487,67 @@ export default function LeftPanelContent(props) {
                             </ArticlesButton>
                         </div>
 
-                        <div className='w-50'>
-                            <DropdownButton
-                                variant="articles w-100"
-                                size='sm'
-                                id="dropdown-basic-button"
-                                className="dropdown-articles"
-                                title={
-                                    <span>
-                                        <i className="fad fa-bug"></i>
-                                        <span>Debug </span>
-                                        <span>{debug ? 'On' : 'Off'}</span>
-                                    </span>
-                                }
+                        <div>
+                            <ArticlesButton
+                                size="sm"
+                                className="w-100"
+                                onClick={() => showBallPositions ? setShowBallPositions(false) : setShowBallPositions(true)}
+                                active={showBallPositions ? true : false}
                             >
+                                <i className="fad fa-bug"></i>
+                                {showBallPositions ? "Ball Debug" : "Ball Debug"}
+                            </ArticlesButton>
+                        </div>
 
-                                <div style={{ maxHeight: '600px', overflowY: 'auto', width: '200px' }}>
+                        <div className='d-flex'>
+                            <div className='w-50'>
+                                <DropdownButton
+                                    variant="articles w-100"
+                                    size='sm'
+                                    id="dropdown-basic-button"
+                                    className="dropdown-articles"
+                                    title={
+                                        <span>
+                                            <i className="fad fa-bug"></i>
+                                            <span>Debug </span>
+                                            <span>{debug ? 'On' : 'Off'}</span>
+                                        </span>
+                                    }
+                                >
 
-                                    {[
-                                        false,
-                                        true
-                                    ]
-                                        .map(location =>
-                                            <Dropdown.Item
-                                                key={location}
-                                                onClick={() => {
-                                                    setDebug(location)
-                                                }}
-                                                className="d-flex justify-content-between"
-                                            >
-                                                {location ? 'True' : 'False'}
-                                            </Dropdown.Item>
-                                        )}
+                                    <div style={{ maxHeight: '600px', overflowY: 'auto', width: '200px' }}>
 
-                                </div>
+                                        {[
+                                            false,
+                                            true
+                                        ]
+                                            .map(location =>
+                                                <Dropdown.Item
+                                                    key={location}
+                                                    onClick={() => {
+                                                        setDebug(location)
+                                                    }}
+                                                    className="d-flex justify-content-between"
+                                                >
+                                                    {location ? 'True' : 'False'}
+                                                </Dropdown.Item>
+                                            )}
 
-                            </DropdownButton>
+                                    </div>
+
+                                </DropdownButton>
+                            </div>
+
+                            <ArticlesButton
+                                size="sm"
+                                className="w-50"
+                                onClick={() => {
+                                    console.log("Ball Positions:", ballPositions);
+                                }}
+                            >
+                                <i className="fad fa-redo"></i>
+                                Log Balls
+                            </ArticlesButton>
                         </div>
 
                     </div>

@@ -24,6 +24,13 @@ export const useEightBallStore = create((set) => ({
         }))
     },
 
+    touchControls: false,
+    setTouchControls: (newValue) => {
+        set((prev) => ({
+            touchControls: newValue
+        }))
+    },
+
     music: false,
     setMusic: (newValue) => {
         set((prev) => ({
@@ -49,6 +56,23 @@ export const useEightBallStore = create((set) => ({
     setNudge: (newValue) => {
         set((prev) => ({
             nudge: newValue
+        }))
+    },
+
+    ballPositions: [],
+    setBallPosition: (ballNumber, position) => {
+        set((prev) => {
+            const updatedPositions = [...prev.ballPositions];
+            updatedPositions[ballNumber] = {
+                ball: ballNumber,
+                position: position
+            };
+            return { ballPositions: updatedPositions };
+        });
+    },
+    setBallPositions: (newValue) => {
+        set((prev) => ({
+            ballPositions: newValue
         }))
     },
 

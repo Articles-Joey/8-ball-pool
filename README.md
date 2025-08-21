@@ -12,7 +12,7 @@ npm run dev
 
 ## Multiplayer
 
-Aiming to have multiplayer via P2P and Websockets. Websocket backend code is not in this repo or available at this time. P2P code will be included here.
+Play with other friends via peerjs multiplayer P2P sessions! Start a lobby of your own or enter a friends peer id to connect and take turns playing online.
 
 ## Attributions
 [8 Ball Icon](https://www.flaticon.com/free-icons/billiard)

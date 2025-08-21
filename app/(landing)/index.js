@@ -1,8 +1,8 @@
 "use client"
-import { 
-    useEffect, 
-    useContext, 
-    useState 
+import {
+    useEffect,
+    useContext,
+    useState
 } from 'react';
 
 import Image from 'next/image'
@@ -58,6 +58,8 @@ export default function DeathRaceLobbyPage() {
     const userReduxState = false
 
     const [nickname, setNickname] = useLocalStorageNew("game:nickname", userReduxState.display_name)
+
+    const [prepareMultiplayer, setPrepareMultiplayer] = useState(false)
 
     const [showInfoModal, setShowInfoModal] = useState(false)
     const [showSettingsModal, setShowSettingsModal] = useState(false)
@@ -195,26 +197,99 @@ export default function DeathRaceLobbyPage() {
 
                     <div className="card-body">
 
-                        <Link
-                            href={{
-                                pathname: `/play`,
-                                // query: {
-                                //     server: id
-                                // }
-                            }}
-                        >
-                            <ArticlesButton className="w-100 mb-3">
-                                Play Single Player
-                            </ArticlesButton>
-                        </Link>
+                        {prepareMultiplayer == false &&
+                            <>
+                                <Link
+                                    href={{
+                                        pathname: `/play`,
+                                        // query: {
+                                        //     server: id
+                                        // }
+                                    }}
+                                >
+                                    <ArticlesButton className="w-100 mb-3">
+                                        Play Single Player
+                                    </ArticlesButton>
+                                </Link>
 
-                        <div className="fw-bold mb-1 small text-center">
+
+                                <ArticlesButton
+                                    className="w-100 mb-1"
+                                    onClick={() => {
+                                        setPrepareMultiplayer({})
+                                    }}
+                                >
+                                    Play Multiplayer
+                                </ArticlesButton>
+                            </>
+                        }
+
+                        {prepareMultiplayer !== false &&
+                            <>
+
+                                {/* <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
+                                    Generate room code
+                                </div>
+
+                                <input
+                                    autoComplete='off'
+                                    // id={item_key}
+                                    type="text"
+                                    className='text-center w-100'
+                                    // autoFocus={autoFocus && true}
+                                    // onBlur={onBlur}
+                                    // placeholder={placeholder}
+                                    value={nickname}
+                                    // onKeyDown={onKeyDown}
+                                    onChange={(e) => {
+                                        setNickname(e.target.value)
+                                    }}
+                                />
+
+                                <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
+                                    Generate room code
+                                </div> */}
+
+                                <div className='w-100 mb-0'>
+                                    <ArticlesButton
+                                        className="w-50"
+                                        onClick={() => {
+                                            setPrepareMultiplayer({})
+                                        }}
+                                    >
+                                        Start a Game
+                                    </ArticlesButton>
+
+                                    <ArticlesButton
+                                        className="w-50"
+                                        onClick={() => {
+                                            setPrepareMultiplayer({})
+                                        }}
+                                    >
+                                        Join a Game
+                                    </ArticlesButton>
+                                </div>
+
+                                <ArticlesButton
+                                    className="w-100 mt-3"
+                                    variant='link'
+                                    onClick={() => {
+                                        setPrepareMultiplayer(false)
+                                    }}
+                                >
+                                    <i className="fad fa-arrow-left me-2"></i>
+                                    Back
+                                </ArticlesButton>
+                            </>
+                        }
+
+                        <div className="fw-bold mb-1 small text-center d-none">
                             {lobbyDetails.players.length || 0} player{lobbyDetails.players.length > 1 && 's'} in the lobby.
                         </div>
 
                         {/* <div className='small fw-bold'>Public Servers</div> */}
 
-                        <div className="servers">
+                        <div className="servers d-none">
 
                             {[1, 2, 3, 4].map(id => {
 

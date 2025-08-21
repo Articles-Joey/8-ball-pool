@@ -1,6 +1,6 @@
 import { createContext, createRef, forwardRef, memo, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { Sky, useDetectGPU, useTexture, OrbitControls, Cylinder, QuadraticBezierLine, Text, Image } from "@react-three/drei";
 
 // import { useCannonStore } from "@/components/Games/Cannon/hooks/useCannonStore";
@@ -654,85 +654,57 @@ function Dartboard() {
 }
 
 function Balls() {
+    const spacing = 1.15;
 
-    const spacing = 1.15
+    // Ball initial positions and numbers
+    const ballConfigs = [
+        { position: [0, 10, -20], ball: 1 },
+        { position: [1.15, 10, -21.75], ball: 9 },
+        { position: [-1.15, 10, -21.75], ball: 2 },
+        { position: [2.25, 10, -23.5], ball: 10 },
+        { position: [0, 10, -23.5], ball: 8 },
+        { position: [-2.25, 10, -23.5], ball: 3 },
+        { position: [3.15, 10, -25.35], ball: 11 },
+        { position: [1.15, 10, -25.35], ball: 7 },
+        { position: [-1.15, 10, -25.35], ball: 14 },
+        { position: [-3.15, 10, -25.35], ball: 4 },
+        { position: [4.5, 10, -27.25], ball: 5 },
+        { position: [2.25, 10, -27.25], ball: 13 },
+        { position: [0, 10, -27.25], ball: 15 },
+        { position: [-2.25, 10, -27.25], ball: 6 },
+        { position: [-4.5, 10, -27.25], ball: 12 },
+    ];
+
+    // Store ball positions in a global store
+    // const ballPositions = useEightBallStore(state => state.ballPositions);
+    const setBallPositions = useEightBallStore(state => state.setBallPositions);
+
+    // This effect runs once to initialize positions in the store
+    useEffect(() => {
+
+        let ballsState = ballConfigs.map(cfg => ({
+            ball: cfg.ball,
+            position: cfg.position
+        }))
+
+        console.log("Setting up balls", ballsState)
+
+        setBallPositions(ballsState)
+
+    }, [setBallPositions]);
 
     return (
         <group>
-
-            {/* Row 1 */}
-            <Ball
-                position={[0, 10, -20]}
-                ball={1}
-            />
-
-            {/* Row 2 */}
-            <Ball
-                position={[1.15, 10, -21.75]}
-                ball={9}
-            />
-            <Ball
-                position={[-1.15, 10, -21.75]}
-                ball={2}
-            />
-
-            {/* Row 3 */}
-            <Ball
-                position={[2.25, 10, -23.5]}
-                ball={10}
-            />
-            <Ball
-                position={[0, 10, -23.5]}
-                ball={8}
-            />
-            <Ball
-                position={[-2.25, 10, -23.5]}
-                ball={3}
-            />
-
-            {/* Row 4 */}
-            <Ball
-                position={[3.15, 10, -25.35]}
-                ball={11}
-            />
-            <Ball
-                position={[1.15, 10, -25.35]}
-                ball={7}
-            />
-            <Ball
-                position={[-1.15, 10, -25.35]}
-                ball={14}
-            />
-            <Ball
-                position={[-3.15, 10, -25.35]}
-                ball={4}
-            />
-
-            {/* Row 5 */}
-            <Ball
-                position={[4.5, 10, -27.25]}
-                ball={5}
-            />
-            <Ball
-                position={[2.25, 10, -27.25]}
-                ball={13}
-            />
-            <Ball
-                position={[0, 10, -27.25]}
-                ball={15}
-            />
-            <Ball
-                position={[-2.25, 10, -27.25]}
-                ball={6}
-            />
-            <Ball
-                position={[-4.5, 10, -27.25]}
-                ball={12}
-            />
-
+            {ballConfigs.map(cfg => (
+                <Ball
+                    key={cfg.ball}
+                    position={cfg.position}
+                    ball={cfg.ball}
+                // setBallPositions={setBallPositions}
+                />
+            ))}
         </group>
-    )
-
+    );
 }
 
 function getBallColor(ball) {
@@ -757,31 +729,58 @@ function getBallColor(ball) {
     return colors[ball] || "white"; // Default to white if the ball number is invalid
 }
 
-function Ball({ position, ball }) {
+function Ball({
+    position,
+    ball,
+    // setBallPositions 
+}) {
+
+    const ballPositions = useEightBallStore(state => state.ballPositions);
+    const setBallPosition = useEightBallStore(state => state.setBallPosition);
 
     const [isVisible, setIsVisible] = useState(true); // Track visibility
 
     const [ref, api] = useSphere(() => ({
         mass: 1,
-        // type: 'Dynamic',
         args: [1, 1, 1],
         position: position,
+        material: { friction: 0.8, restitution: 0.1 },
         onCollide: (e) => {
             if (e?.body?.userData?.isTableBottom) {
-                console.log("Ball hit table bottom")
-
-                // Disable physics
-                // Out of sight, out of mind! lol - not sure if this is best way but any computer or phone can handle this so why not!
                 api.mass.set(0);
                 api.velocity.set(0, 0, 0);
                 api.angularVelocity.set(0, 0, 0);
                 api.position.set(0, -100, 0);
-
-                // Hide the ball
                 setIsVisible(false);
             }
         }
-    }))
+    }));
+
+    const pos = useRef(new THREE.Vector3(0, 0, 0));
+    useEffect(
+        () =>
+            api.position.subscribe((v) => {
+                return (pos.current = new THREE.Vector3(v[0], v[1], v[2]));
+            }),
+        []
+    );
+
+    // Update ball position in store as it moves
+    useFrame(() => {
+
+        // if (!ref.current || !isVisible) return;
+        // const pos = ref.current.position;
+
+        // const prevPos = ballPositions.find(b => b.ball === ball)?.position;
+        // const currPos = [pos.x, pos.y, pos.z];
+
+        // if (ball == 1) {
+        //     console.log("Updating position for ball", ball, "to", pos.current);
+        // }
+
+        setBallPosition(ball, pos.current);
+
+    });
 
     const color = getBallColor(ball);
 
@@ -789,12 +788,9 @@ function Ball({ position, ball }) {
 
     return (
         <group>
-
             <mesh castShadow ref={ref}>
-
                 <sphereGeometry args={[1, 10, 10]} />
                 <meshStandardMaterial color={color} />
-
                 {ball > 8 && <group>
                     <mesh
                         castShadow
@@ -806,7 +802,6 @@ function Ball({ position, ball }) {
                         />
                         <meshStandardMaterial color="white" />
                     </mesh>
-
                     <mesh
                         castShadow
                         rotation={[-Math.PI / 2, 0, 0]}
@@ -818,10 +813,7 @@ function Ball({ position, ball }) {
                         <meshStandardMaterial color="white" />
                     </mesh>
                 </group>}
-
             </mesh>
-
         </group>
-    )
-
+    );
 }

@@ -40,7 +40,11 @@
         height: 160px;
         z-index: 3;
 
-        .fire-button, .up-button, .down-button, .left-button, .right-button {
+        .fire-button,
+        .up-button,
+        .down-button,
+        .left-button,
+        .right-button {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -76,8 +80,97 @@
         height: 50px;
         z-index: 3;
 
-        @include media-breakpoint-up(lg) {
-            display: none;
+        // @include media-breakpoint-up(lg) {
+        //     display: none;
+        // }
+
+        .floating-controls {
+            // position: fixed;
+            // bottom: 50px;
+            // left: 50%;
+            // transform: translate(0%, -50%);
+            // display: flex;
+            // flex-direction: column;
+            // align-items: center;
+            // justify-content: center;
+
+            .rotation {
+                margin: 1rem;
+                bottom: 50px;
+                position: fixed;
+                left: calc(50%);
+                transform: translate(-50%, 0);
+                display: flex;
+                justify-content: center;
+
+                @include media-breakpoint-up(lg) {
+                    left: calc(50% + 150px);
+                }
+            }
+
+            .floating-button {
+                background-color: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 50px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                // position: fixed;
+                // bottom: 50px;
+                // left: 50%;
+                // transform: translate(0%, -50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                opacity: 0.8;
+                transition-duration: 200ms;
+
+                &:hover {
+                    opacity: 1;
+                    cursor: pointer;
+                    scale: 1.1;
+                }
+
+                &.launch {
+                    margin: 1rem;
+                    bottom: 50px;
+                    position: fixed;
+                    left: initial;
+                    right: 0;
+                    width: 75px;
+                    height: 75px;
+                    // transform: initial;
+                    // transform: translate(0%, -50%);
+                }
+
+                &.increase-power,
+                &.decrease-power {
+                    @include media-breakpoint-up(lg) {
+                        left: 300px !important;
+                    }
+                }
+
+                &.increase-power {
+                    margin: 1rem;
+                    bottom: 110px;
+                    position: fixed;
+                    left: 0;
+                    // right: 0;
+                }
+
+                &.decrease-power {
+                    margin: 1rem;
+                    bottom: 50px;
+                    position: fixed;
+                    left: 0;
+                    // right: 0;
+                }
+
+            }
         }
     }
 
@@ -169,7 +262,8 @@
         // padding: 1rem;
     }
 
-    .panel-left, .panel-right {        
+    .panel-left,
+    .panel-right {
         width: 300px;
         height: calc(100vh - 50px);
         flex-shrink: 0;
