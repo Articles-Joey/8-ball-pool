@@ -25,7 +25,7 @@ export default function MenuBarControls() {
         cueRotationRef.current = cueRotation;
     }, [cueRotation]);
 
-    const handleCueRotationChange = (direction) => {
+    const useHandleCueRotationChange = (direction) => {
         const intervalRef = useRef(null);
 
         const startRotation = () => {
@@ -53,10 +53,10 @@ export default function MenuBarControls() {
         return { startRotation, stopRotation };
     };
 
-    const increaseRotationHandlers = handleCueRotationChange("increase");
-    const decreaseRotationHandlers = handleCueRotationChange("decrease");
+    const increaseRotationHandlers = useHandleCueRotationChange("increase");
+    const decreaseRotationHandlers = useHandleCueRotationChange("decrease");
 
-    const handleCuePowerChange = (direction) => {
+    const useHandleCuePowerChange = (direction) => {
         const intervalRef = useRef(null);
 
         const startPowerChange = () => {
@@ -80,8 +80,8 @@ export default function MenuBarControls() {
         return { startPowerChange, stopPowerChange };
     };
 
-    const increasePowerHandlers = handleCuePowerChange("increase");
-    const decreasePowerHandlers = handleCuePowerChange("decrease");
+    const increasePowerHandlers = useHandleCuePowerChange("increase");
+    const decreasePowerHandlers = useHandleCuePowerChange("decrease");
 
     useEffect(() => {
         // define a custom handler function

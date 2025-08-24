@@ -6,13 +6,14 @@ import ArticlesButton from "@/components/UI/Button";
 
 // import ControllerPreview from "../../ControllerPreview";
 
-import { useSocketStore } from "@/hooks/useSocketStore";
+// import { useSocketStore } from "@/hooks/useSocketStore";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useEffect, useRef, useState } from "react";
 import { Dropdown, DropdownButton } from "react-bootstrap";
 
 import Peer from 'peerjs';
+import PeerLogic from "./PeerLogic";
 
 export default function LeftPanelContent(props) {
 
@@ -302,97 +303,8 @@ export default function LeftPanelContent(props) {
                 </div>
             </div> */}
 
-            {/* Session Controls */}
-            <div
-                className="card card-articles card-sm"
-            >
-                <div className="card-body">
-
-                    <div className="small text-muted">Session Controls</div>
-
-                    <div className='d-flex flex-column'>
-
-                        <div
-                            style={{
-                                fontSize: '0.7rem!important',
-                            }}
-                        >
-                            {peerRef?.current?._id || "None"}
-                        </div>
-
-                        <input
-                            autoComplete='off'
-                            // id={item_key}
-                            type="text"
-                            className='text-center w-100'
-                            // autoFocus={autoFocus && true}
-                            // onBlur={onBlur}
-                            // placeholder={placeholder}
-                            value={peerToConnect}
-                            style={{
-                                fontSize: '0.7rem!important'
-                            }}
-                            // onKeyDown={onKeyDown}
-                            onChange={(e) => {
-                                setPeerToConnect(e.target.value)
-                            }}
-                        />
-
-                        <div>
-
-                            {!connected ?
-                                <ArticlesButton
-                                    size="sm"
-                                    className="w-100"
-                                    active={false}
-                                    onClick={() => {
-                                        // console.log('Connecting to host...');
-                                        // const conn = newPeer.connect('host-peer-id'); // Replace with the host's peer ID
-                                        // conn.on('open', () => {
-                                        //     console.log('Connected to host');
-                                        //     conn.on('data', (data) => {
-                                        //         setBallsPositions(data);
-                                        //     });
-                                        // });
-
-                                        connectToPeer(peerToConnect)
-                                    }}
-                                >
-                                    <i className="fad fa-redo"></i>
-                                    Connect
-                                </ArticlesButton>
-                                :
-                                <ArticlesButton
-                                    size="sm"
-                                    className="w-100"
-                                    active={false}
-                                    onClick={() => {
-                                        // setTouchControlsEnabled(true)
-                                    }}
-                                >
-                                    <i className="fad fa-redo"></i>
-                                    Disconnect
-                                </ArticlesButton>
-                            }
-
-                            <ArticlesButton
-                                size="sm"
-                                className="w-100"
-                                active={false}
-                                onClick={() => {
-                                    sendMessage()
-                                }}
-                            >
-                                <i className="fad fa-redo"></i>
-                                Test Message
-                            </ArticlesButton>
-                            
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
+            {/* Peer Controls */}
+            <PeerLogic />
 
             {/* Touch Controls */}
             <div

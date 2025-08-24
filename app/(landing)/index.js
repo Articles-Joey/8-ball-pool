@@ -19,6 +19,7 @@ import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import IsDev from '@/components/UI/IsDev';
 // import { ChromePicker } from 'react-color';
 import { useSocketStore } from '@/hooks/useSocketStore';
+import { useRouter } from 'next/navigation';
 
 // import GameScoreboard from 'components/Games/GameScoreboard'
 
@@ -53,6 +54,8 @@ export default function DeathRaceLobbyPage() {
     } = useSocketStore(state => ({
         socket: state.socket,
     }));
+
+    const router = useRouter();
 
     // const userReduxState = useSelector((state) => state.auth.user_details)
     const userReduxState = false
@@ -254,7 +257,9 @@ export default function DeathRaceLobbyPage() {
                                     <ArticlesButton
                                         className="w-50"
                                         onClick={() => {
-                                            setPrepareMultiplayer({})
+                                            const params = new URLSearchParams();
+                                            params.set("game_id", "loading");
+                                            router.push(`/play?${params.toString()}`);
                                         }}
                                     >
                                         Start a Game

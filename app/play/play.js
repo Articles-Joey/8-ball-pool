@@ -18,7 +18,7 @@ import useFullscreen from '@/hooks/useFullScreen';
 // import { useGameStore } from '@/components/Games/Ocean Rings/hooks/useGameStore';
 // import { Dropdown, DropdownButton } from 'react-bootstrap';
 // import TouchControls from 'app/(site)/community/games/glass-ceiling/components/UI/TouchControls';
-import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
+// import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import LeftPanelContent from '../components/LeftPanel';
 import { useSocketStore } from '@/hooks/useSocketStore';
 import MenuBarControls from '../components/MenuBarControls';
@@ -65,7 +65,7 @@ export default function GamePage() {
         //     socket.emit('leave-room', 'game:glass-ceiling-landing')
         // };
 
-    }, [server, socket.connected]);
+    }, [server, socket]);
 
     const [showMenu, setShowMenu] = useState(false)
 
@@ -97,8 +97,8 @@ export default function GamePage() {
         setShowMenu
     }
 
-    const game_name = 'Move Match'
-    const game_key = 'move-match'
+    // const game_name = '8 Ball Pool'
+    // const game_key = '8-ball-pool'
 
     return (
 
