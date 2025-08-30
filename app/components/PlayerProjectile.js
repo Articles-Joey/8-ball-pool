@@ -4,13 +4,19 @@ import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { degToRad } from "three/src/math/MathUtils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { MathUtils } from "three";
+import { useFrame } from "@react-three/fiber";
 
 export default function PlayerProjectile() {
 
     const toolsRef = useRef()
 
     const [ref, api] = useSphere(() => ({
+        // Mass on balls
+        // mass: 4,
         mass: 10,
+        material: { friction: 20.8, restitution: 1.1 },
+        linearDamping: 0.2, // Adds a slight resistance to rolling
+        angularDamping: 0.2, // Adds a slight resistance to spinning
         // type: 'Dynamic',
         args: [1, 1, 1],
         position: [0, 5, 25],
@@ -89,6 +95,18 @@ export default function PlayerProjectile() {
         }
 
     }, [api.position]);
+
+    useEffect(() => {
+        api?.velocity.subscribe((position) => {
+            const [vx, vy, vz] = position;
+            const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
+            if (speed < 0.5 && speed > 0.1) { // threshold for sleep
+
+                api.sleep();
+
+            }
+        });
+    }, [api.velocity]);
 
     return (
         <group>

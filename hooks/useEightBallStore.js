@@ -15,6 +15,13 @@ export const useEightBallStore = create((set) => ({
         }))
     },
 
+    resetPeer: false,
+    setResetPeer: (newValue) => {
+        set((prev) => ({
+            resetPeer: newValue
+        }))
+    },
+
     // Mouse and Keyboard
     // Touch
     controlType: "Mouse and Keyboard",
@@ -60,12 +67,14 @@ export const useEightBallStore = create((set) => ({
     },
 
     ballPositions: [],
-    setBallPosition: (ballNumber, position) => {
+    setBallPosition: (ballNumber, position, velocity) => {
         set((prev) => {
+            // return prev.ballPositions
             const updatedPositions = [...prev.ballPositions];
             updatedPositions[ballNumber] = {
                 ball: ballNumber,
-                position: position
+                position: [position.x, position.y, position.z],
+                velocity: [velocity.x, velocity.y, velocity.z]
             };
             return { ballPositions: updatedPositions };
         });
@@ -75,5 +84,25 @@ export const useEightBallStore = create((set) => ({
             ballPositions: newValue
         }))
     },
+    ballPositionsUpdated: false,
+    setBallPositionsUpdated: (newValue) => {
+        set((prev) => ({
+            ballPositionsUpdated: newValue
+        }))
+    },
+
+    isHost: false,
+    setIsHost: (newValue) => {
+        set((prev) => ({
+            isHost: newValue
+        }))
+    },
+
+    currentTurn: false,
+    setCurrentTurn: (newValue) => {
+        set((prev) => ({
+            currentTurn: newValue
+        }))
+    }
 
 }))

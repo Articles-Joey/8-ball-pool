@@ -52,14 +52,14 @@ export default function GamePage() {
 
     useEffect(() => {
 
-        if (server && socket.connected) {
-            socket.emit('join-room', `game:cannon-room-${server}`, {
-                game_id: server,
-                nickname: JSON.parse(localStorage.getItem('game:nickname')),
-                client_version: '1',
+        // if (server && socket.connected) {
+        //     socket.emit('join-room', `game:cannon-room-${server}`, {
+        //         game_id: server,
+        //         nickname: JSON.parse(localStorage.getItem('game:nickname')),
+        //         client_version: '1',
 
-            });
-        }
+        //     });
+        // }
 
         // return function cleanup() {
         //     socket.emit('leave-room', 'game:glass-ceiling-landing')
@@ -70,8 +70,9 @@ export default function GamePage() {
     const [showMenu, setShowMenu] = useState(false)
 
     // const [touchControlsEnabled, setTouchControlsEnabled] = useLocalStorageNew("game:touchControlsEnabled", false)
-    const touchControls = useEightBallStore(state => state.touchControls);
-    const setTouchControls = useEightBallStore(state => state.setTouchControls);
+    
+    // const touchControls = useEightBallStore(state => state.touchControls);
+    // const setTouchControls = useEightBallStore(state => state.setTouchControls);
 
     const [sceneKey, setSceneKey] = useState(0);
 

@@ -54,8 +54,6 @@ let ballsState = ballConfigs.map(cfg => ({
 
 export default function Balls() {
 
-    const ballsRef = useRef([]);
-
     const [finalBallPositions, setFinalBallPositions] = useState([]);
 
     const ballPositionsUpdated = useEightBallStore(state => state.ballPositionsUpdated);
@@ -76,36 +74,28 @@ export default function Balls() {
             ball: cfg.ball,
             position: cfg.position
         }))
-
+        
         console.log("Setting up balls", ballsState)
-
-        ballsRef.current = ballsState
-
         setBallPositions(ballsState)
-
-
     }, [setBallPositions]);
 
     // useEffect(() => {
     //     console.log("ballPositions", ballPositions)
     // }, [ballPositions]);
 
-    useEffect(() => {
-        if (ballPositionsUpdated && ballsRef?.current) {
-            console.log("Ball positions updated detected, overriding state", ballPositionsUpdated);
-            ballsRef.current = ballPositionsUpdated;
-            setBallPositionsUpdated(false);
-            // ballConfigs = ballPositions
-        }
-    }, [ballPositionsUpdated, ballsRef]);
+    // useEffect(() => {
+    //     if (ballPositionsUpdated) {
+    //         console.log("Ball positions updated detected, overriding state");
+    //         setBallPositionsUpdated(false);
+    //     }
+    // }, [ballPositionsUpdated]);
 
     return (
         <group>
-            {!ballPositionsUpdated && ballsRef?.current?.map(cfg => (
+            {ballConfigs.map(cfg => (
                 <Ball
                     key={cfg.ball}
                     position={cfg.position}
-                    velocity={cfg.velocity}
                     ball={cfg.ball}
                 // setBallPositions={setBallPositions}
                 />
@@ -116,7 +106,6 @@ export default function Balls() {
 
 function Ball({
     position,
-    velocity,
     ball,
     // setBallPositions 
 }) {
@@ -127,12 +116,10 @@ function Ball({
     const [isVisible, setIsVisible] = useState(true); // Track visibility
 
     const [ref, api] = useSphere(() => ({
-        mass: 4,
+        mass: 1,
         args: [1, 1, 1],
         position: position,
-        material: { friction: 20.8, restitution: 1.1 },
-        linearDamping: 0.2, // Adds a slight resistance to rolling
-        angularDamping: 0.2, // Adds a slight resistance to spinning
+        material: { friction: 0.8, restitution: 0.1 },
         onCollide: (e) => {
             if (e?.body?.userData?.isTableBottom) {
                 api.mass.set(0);
@@ -145,36 +132,39 @@ function Ball({
     }));
 
     const pos = useRef(new THREE.Vector3(0, 0, 0));
-    const vel = useRef(new THREE.Vector3(0, 0, 0));
+    useEffect(
+        () =>
+            api.position.subscribe((v) => {
+                return (pos.current = new THREE.Vector3(v[0], v[1], v[2]));
+            }),
+        []
+    );
 
-    useEffect(() => {
-        const unsubPos = api.position.subscribe((v) => {
-            pos.current = new THREE.Vector3(v[0], v[1], v[2]);
-        });
-        const unsubVel = api.velocity.subscribe((v) => {
-            // console.log("velocity.current", velocity.current)
-            vel.current = new THREE.Vector3(v[0], v[1], v[2]);
-        });
-        return () => {
-            unsubPos();
-            unsubVel();
-        };
-    }, [api.position, api.velocity]);
-
-    // Update ball position and velocity in store as it moves
+    // Update ball position in store as it moves
     useFrame(() => {
-        setBallPosition(ball, pos.current, vel.current);
+
+        // if (!ref.current || !isVisible) return;
+
+        // const pos = ref.current.position;
+
+        // console.log("pos", pos)
+
+
+
+        // const prevPos = ballPositions.find(b => b.ball === ball)?.position;
+        // const currPos = [pos.x, pos.y, pos.z];
+
+        // if (ball == 1) {
+        //     console.log("Updating position for ball", ball, "to", pos.current);
+        // }
+
+        setBallPosition(ball, pos.current);
+
     });
 
     const color = getBallColor(ball);
 
     if (!isVisible) return null;
-
-    useEffect(() => {
-        console.log("Passed velocity", velocity)
-        if(!velocity) return
-        api.velocity.set(velocity[0], velocity[1], velocity[2]);
-    }, [])
 
     return (
         <group>

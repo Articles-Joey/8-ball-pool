@@ -495,6 +495,7 @@ function Wall({ position, args, inner }) {
         type: 'Static',
         args: args,
         position: position,
+        material: { friction: 1, restitution: 1 },
     }))
 
     return (

@@ -9,13 +9,17 @@ import ArticlesButton from "@/components/UI/Button";
 // import { useSocketStore } from "@/hooks/useSocketStore";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Dropdown, DropdownButton } from "react-bootstrap";
 
-import Peer from 'peerjs';
+// import Peer from 'peerjs';
 import PeerLogic from "./PeerLogic";
+import { useSearchParams } from "next/navigation";
 
 export default function LeftPanelContent(props) {
+
+    let searchParams = useSearchParams()
+    let searchParamsObject = Object.fromEntries(searchParams.entries());
 
     const {
         server,
@@ -46,6 +50,15 @@ export default function LeftPanelContent(props) {
 
     const touchControls = useEightBallStore(state => state.touchControls);
     const setTouchControls = useEightBallStore(state => state.setTouchControls);
+
+    const resetPeer = useEightBallStore(state => state.resetPeer);
+    const setResetPeer = useEightBallStore(state => state.setResetPeer);
+
+    const setBallPositionsUpdated = useEightBallStore(state => state.setBallPositionsUpdated);
+
+    useEffect(() => {
+        setResetPeer(false);
+    }, [resetPeer]);
 
     const cueRotationRef = useRef(cueRotation);
     useEffect(() => {
@@ -157,49 +170,49 @@ export default function LeftPanelContent(props) {
         // setMessage('')
     }
 
-    const [peer, setPeer] = useState(null);
+    // const [peer, setPeer] = useState(null);
 
-    const peerRef = useRef(null);
+    // const peerRef = useRef(null);
 
-    useEffect(() => {
-        if (peerRef.current) return; // Prevent double initialization in StrictMode
+    // useEffect(() => {
+    //     if (peerRef.current) return; // Prevent double initialization in StrictMode
 
-        const newPeer = new Peer();
-        setPeer(newPeer);
-        peerRef.current = newPeer;
+    //     const newPeer = new Peer();
+    //     setPeer(newPeer);
+    //     peerRef.current = newPeer;
 
-        newPeer.on('open', (id) => {
-            console.log(`Peer ID: ${id}`);
+    //     newPeer.on('open', (id) => {
+    //         console.log(`Peer ID: ${id}`);
 
-            // if (isHost) {
-            //     console.log('Hosting session...');
-            // } else {
-            //     console.log('Connecting to host...');
-            //     const conn = newPeer.connect('host-peer-id'); // Replace with the host's peer ID
-            //     conn.on('open', () => {
-            //         console.log('Connected to host');
-            //         conn.on('data', (data) => {
-            //             setBallsPositions(data);
-            //         });
-            //     });
-            // }
+    //         // if (isHost) {
+    //         //     console.log('Hosting session...');
+    //         // } else {
+    //         //     console.log('Connecting to host...');
+    //         //     const conn = newPeer.connect('host-peer-id'); // Replace with the host's peer ID
+    //         //     conn.on('open', () => {
+    //         //         console.log('Connected to host');
+    //         //         conn.on('data', (data) => {
+    //         //             setBallsPositions(data);
+    //         //         });
+    //         //     });
+    //         // }
 
-        });
+    //     });
 
-        newPeer.on('connection', (conn) => {
-            console.log('New connection:', conn.peer);
-            // setConnections((prev) => [...prev, conn]);
+    //     newPeer.on('connection', (conn) => {
+    //         console.log('New connection:', conn.peer);
+    //         // setConnections((prev) => [...prev, conn]);
 
-            // conn.on('data', (data) => {
-            //     console.log('Received data:', data);
-            //     setBallsPositions(data);
-            // });
-        });
+    //         // conn.on('data', (data) => {
+    //         //     console.log('Received data:', data);
+    //         //     setBallsPositions(data);
+    //         // });
+    //     });
 
-        return () => {
-            newPeer.destroy();
-        };
-    }, []);
+    //     return () => {
+    //         newPeer.destroy();
+    //     };
+    // }, []);
 
     const [showBallPositions, setShowBallPositions] = useState(false);
 
@@ -303,8 +316,30 @@ export default function LeftPanelContent(props) {
                 </div>
             </div> */}
 
+            <div
+                className="card card-articles card-sm"
+            >
+                <div className="card-body">
+
+                    <div className="small text-muted">Break to determine side</div>
+                    <div className="small text-muted">Stripes turn</div>
+                    <div className="small text-muted">Solids turn</div>
+
+                    <div className='d-flex flex-column'>
+
+                    </div>
+
+                </div>
+            </div>
+
             {/* Peer Controls */}
-            <PeerLogic />
+            {searchParamsObject?.game_id &&
+                <Suspense>
+                    {!resetPeer &&
+                        <PeerLogic />
+                    }
+                </Suspense>
+            }
 
             {/* Touch Controls */}
             <div
@@ -361,22 +396,6 @@ export default function LeftPanelContent(props) {
                         {/* <div>Ball Positions: {JSON.stringify(ballPositions)}</div> */}
                     </div>
 
-                    {showBallPositions && (
-                        <div
-                            className='small border p-2'
-                            style={{
-                                height: '200px',
-                                overflowY: 'auto'
-                            }}
-                        >
-                            {ballPositions.map((pos, index) => (
-                                <div key={index}>
-                                    Ball {pos.ball}: {JSON.stringify(pos.position)}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
                     <div className='d-flex flex-column'>
 
                         <div>
@@ -396,18 +415,6 @@ export default function LeftPanelContent(props) {
                             >
                                 <i className="fad fa-redo"></i>
                                 Reset Camera
-                            </ArticlesButton>
-                        </div>
-
-                        <div>
-                            <ArticlesButton
-                                size="sm"
-                                className="w-100"
-                                onClick={() => showBallPositions ? setShowBallPositions(false) : setShowBallPositions(true)}
-                                active={showBallPositions ? true : false}
-                            >
-                                <i className="fad fa-bug"></i>
-                                {showBallPositions ? "Ball Debug" : "Ball Debug"}
                             </ArticlesButton>
                         </div>
 
@@ -461,6 +468,178 @@ export default function LeftPanelContent(props) {
                                 Log Balls
                             </ArticlesButton>
                         </div>
+
+                        <div>
+                            <ArticlesButton
+                                size="sm"
+                                className="w-100 mt-3"
+                                onClick={() => {
+                                    setBallPositionsUpdated(
+                                        [
+                                            // {
+                                            //     "ball": 1,
+                                            //     "position": [
+                                            //         0,
+                                            //         10,
+                                            //         -20
+                                            //     ]
+                                            // },
+                                            {
+                                                "ball": 1,
+                                                "position": [
+                                                    -8.247533640255673,
+                                                    1.249927615551298,
+                                                    -23.47405745980015
+                                                ]
+                                            },
+                                            {
+                                                "ball": 2,
+                                                "position": [
+                                                    -15.452261018758763,
+                                                    1.249927615551298,
+                                                    -10.905968345373855
+                                                ]
+                                            },
+                                            {
+                                                "ball": 3,
+                                                "position": [
+                                                    -5.023284032582997,
+                                                    1.249927615551298,
+                                                    -27.240293678273577
+                                                ]
+                                            },
+                                            {
+                                                "ball": 4,
+                                                "position": [
+                                                    -15.047775089667894,
+                                                    1.249927615551298,
+                                                    -24.988772356025503
+                                                ]
+                                            },
+                                            {
+                                                "ball": 5,
+                                                "position": [
+                                                    7.172554509721704,
+                                                    1.249927615551298,
+                                                    -36.930368951579794
+                                                ]
+                                            },
+                                            {
+                                                "ball": 6,
+                                                "position": [
+                                                    -2.637840178526253,
+                                                    1.249927615551298,
+                                                    -39.25150371230237
+                                                ]
+                                            },
+                                            {
+                                                "ball": 7,
+                                                "position": [
+                                                    8.000845729860547,
+                                                    1.249927615551298,
+                                                    -27.43953743600558
+                                                ]
+                                            },
+                                            {
+                                                "ball": 8,
+                                                "position": [
+                                                    2.0942256802964323,
+                                                    1.249927615551298,
+                                                    -24.707135693317415
+                                                ]
+                                            },
+                                            {
+                                                "ball": 9,
+                                                "position": [
+                                                    18.208209054461225,
+                                                    1.249927615551298,
+                                                    -14.26495565137875
+                                                ]
+                                            },
+                                            {
+                                                "ball": 10,
+                                                "position": [
+                                                    3.113617960652882,
+                                                    1.249927615551298,
+                                                    -31.278087801697602
+                                                ]
+                                            },
+                                            {
+                                                "ball": 11,
+                                                "position": [
+                                                    12.641818571488063,
+                                                    1.249927615551298,
+                                                    -25.802180798722873
+                                                ]
+                                            },
+                                            {
+                                                "ball": 12,
+                                                "position": [
+                                                    -7.898695648627498,
+                                                    1.249927615551298,
+                                                    -38.960753353375125
+                                                ]
+                                            },
+                                            {
+                                                "ball": 13,
+                                                "position": [
+                                                    2.1882009336459034,
+                                                    1.249927615551298,
+                                                    -38.36133603719746
+                                                ]
+                                            },
+                                            {
+                                                "ball": 14,
+                                                "position": [
+                                                    -9.783205496927106,
+                                                    1.249927615551298,
+                                                    -27.18107636958629
+                                                ]
+                                            },
+                                            {
+                                                "ball": 15,
+                                                "position": [
+                                                    0.10354160397452415,
+                                                    1.249927615551298,
+                                                    -29.265224367762528
+                                                ]
+                                            }
+                                        ]
+                                    )
+                                }}
+                                active={showBallPositions ? true : false}
+                            >
+                                Fake Positions
+                            </ArticlesButton>
+                        </div>
+
+                        <div>
+                            <ArticlesButton
+                                size="sm"
+                                className="w-100 mt-3"
+                                onClick={() => showBallPositions ? setShowBallPositions(false) : setShowBallPositions(true)}
+                                active={showBallPositions ? true : false}
+                            >
+                                <i className="fad fa-bug"></i>
+                                {showBallPositions ? "Ball Debug" : "Ball Debug"}
+                            </ArticlesButton>
+                        </div>
+
+                        {showBallPositions && (
+                            <div
+                                className='small border p-2'
+                                style={{
+                                    height: '200px',
+                                    overflowY: 'auto'
+                                }}
+                            >
+                                {ballPositions.map((pos, index) => (
+                                    <div key={index}>
+                                        Ball {pos.ball}: {JSON.stringify(pos.position)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                     </div>
 

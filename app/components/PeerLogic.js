@@ -13,14 +13,23 @@ export default function PeerLogic() {
 
     const [connected, setConnected] = useState(false)
 
-    const [peer, setPeer] = useState(null)
-
     const [peerId, setPeerId] = useState("")
     const [connectionPeerId, setConnectionPeerId] = useState("")
 
     const connectionRef = useRef(null);
+    const peerRef = useRef(null); // Use a ref to store the peer instance
 
     const ballPositions = useEightBallStore(state => state.ballPositions);
+    const setBallPositions = useEightBallStore(state => state.setBallPositions);
+
+    const resetPeer = useEightBallStore(state => state.resetPeer);
+    const setResetPeer = useEightBallStore(state => state.setResetPeer);
+
+    // const ballPositionsUpdated = useEightBallStore(state => state.ballPositionsUpdated);
+    const setBallPositionsUpdated = useEightBallStore(state => state.setBallPositionsUpdated);
+
+    const isHost = useEightBallStore(state => state.isHost);
+    const setIsHost = useEightBallStore(state => state.setIsHost);
 
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([]);
@@ -30,23 +39,15 @@ export default function PeerLogic() {
 
     useEffect(() => {
 
-        if (!peer) {
+        if (!peerRef.current) {
 
-            console.log("Setting peer")
+            console.log("Setting up Peer")
 
-            setPeer(
-                new Peer(null, { debug: 2 })
-            )
+            const newPeer = new Peer(null, { debug: 2 });
+            peerRef.current = newPeer;
 
-        }
+            newPeer.on('open', (id) => {
 
-    }, []);
-
-    useEffect(() => {
-
-        if (peer && searchParamsObject.game_id) {
-
-            peer.on('open', (id) => {
                 setPeerId(id);
                 console.log(`My peer ID is: ${id}`);
 
@@ -55,12 +56,18 @@ export default function PeerLogic() {
                 window.history.replaceState({}, '', url);
             });
 
-            peer.on('connection', function (conn) {
+            newPeer.on('connection', function (conn) {
                 console.log("A connection was made?")
 
                 conn.on('data', (data) => {
 
                     console.log('Received data:', data); // Handle incoming data
+
+                    // setBallPositions(prev => {
+                    //     const updatedPositions = [...prev];
+                    //     updatedPositions[data.ball] = data.position;
+                    //     return updatedPositions;
+                    // });
 
                     if (data.type == "Message") {
                         setMessages(prev => [
@@ -69,6 +76,12 @@ export default function PeerLogic() {
                                 ...data
                             }
                         ])
+                    }
+
+                    if (data.type == "Ball Positions") {
+                        console.log("Set Ball Positions", data.ballPositions)
+                        setBallPositions(data.ballPositions);
+                        setBallPositionsUpdated(data.ballPositions);
                     }
 
                     if (data.type == "Call") {
@@ -91,7 +104,7 @@ export default function PeerLogic() {
                 });
             });
 
-            peer.on('call', call => {
+            newPeer.on('call', call => {
                 console.log("Call incoming")
                 call.answer(); // Auto-answer with no media (you can prompt user)
                 call.on('stream', stream => {
@@ -102,33 +115,49 @@ export default function PeerLogic() {
                 });
             });
 
-            peer.on('disconnected', (data) => {
+            newPeer.on('disconnected', (data) => {
                 console.log('Disconnected data:', data); // Handle incoming data
             });
 
-            // peer.on('data', (data) => {
-            //     console.log('Received data:', data); // Handle incoming data
-            // });
+            peerRef.current = newPeer;
         }
 
         return () => {
-            if (peer) {
-                peer.disconnect();
-                peer.destroy();
+            if (peerRef.current) {
+                peerRef.current.disconnect();
+                peerRef.current.destroy();
+                peerRef.current = null;
             }
         };
 
-    }, [peer, searchParams])
+    }, []);
+
+    useEffect(() => {
+
+        console.log("My peerId changed", peerId)
+
+    }, [peerId]);
+
+    useEffect(() => {
+
+        if (searchParamsObject.game_id == peerId) {
+
+            console.log("PeerId is equal to the game_id so I must be the host")
+            setIsHost(true)
+
+        }
+
+    }, [peerId, searchParams]);
 
     function connectToPeer(id) {
 
-        if (!peer) {
+        if (!peerRef.current) {
             console.error('Peer not initialized yet!');
             return;
         }
 
         console.log(`Attempting peer connection to ${id}`);
-        const connection = peer.connect(id);
+        const connection = peerRef.current.connect(id);
 
         connection.on('open', () => {
             console.log(`Connection to ${id} established.`);
@@ -154,16 +183,28 @@ export default function PeerLogic() {
         connection.on('error', (err) => {
             console.error('Connection error:', err);
         });
+
+        connection.on('close', () => {
+            console.log(`Peer ${id} disconnected from you.`);
+            setConnected(false);
+        });
     }
 
     function sendMessage() {
         console.log("Test")
 
+        // let data = {
+        //     type: "Message",
+        //     date: new Date(),
+        //     peerId,
+        //     message: ballPositions
+        // }
+
         let data = {
-            type: "Message",
+            type: "Ball Positions",
             date: new Date(),
             peerId,
-            message: ballPositions
+            ballPositions: ballPositions
         }
 
         connectionRef.current.send({
@@ -194,8 +235,13 @@ export default function PeerLogic() {
                         style={{
                             fontSize: '0.7rem!important',
                         }}
+                        onClick={() => {
+                            console.log("peerId", peerId)
+                            console.log("peer", peerRef.current)
+                            console.log("connectionRef.current", connectionRef.current)
+                        }}
                     >
-                        {peerId || "None"}
+                        {peerId ? peerId : "None"}
                     </div>
 
                     <input
@@ -245,8 +291,16 @@ export default function PeerLogic() {
                                 className="w-100"
                                 active={false}
                                 onClick={() => {
+                                    console.log("Disconnecting peer")
                                     // setTouchControlsEnabled(true)
-                                    peer.disconnect();
+                                    // peerRef.current.disconnect();
+                                    peerRef.current.disconnect();
+                                    peerRef.current.destroy();
+                                    peerRef.current = null;
+                                    setConnected(false)
+                                    // setConnectionPeerId("")
+                                    setPeerId(false)
+                                    setResetPeer(true)
                                 }}
                             >
                                 <i className="fad fa-redo"></i>

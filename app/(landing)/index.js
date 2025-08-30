@@ -2,7 +2,8 @@
 import {
     useEffect,
     useContext,
-    useState
+    useState,
+    useRef
 } from 'react';
 
 import Image from 'next/image'
@@ -60,7 +61,7 @@ export default function DeathRaceLobbyPage() {
     // const userReduxState = useSelector((state) => state.auth.user_details)
     const userReduxState = false
 
-    const [nickname, setNickname] = useLocalStorageNew("game:nickname", userReduxState.display_name)
+    const [nickname, setNickname] = useLocalStorageNew("game:nickname", '')
 
     const [prepareMultiplayer, setPrepareMultiplayer] = useState(false)
 
@@ -101,6 +102,41 @@ export default function DeathRaceLobbyPage() {
 
     }, [showInfoModal])
 
+    const nicknames = [
+        "Cue Master",
+        "Eight Ball Eddie",
+        "Rack Attack",
+        "Pocket Rocket",
+        "Spin Doctor",
+        "Bank Shot Bob",
+        "Break Queen",
+        "Chalk Zilla",
+        "Scratch Cat",
+        "Side Pocket Sam",
+        "Magic Cue",
+        "Green Felt Greg",
+        "Corner King",
+        "Pool Shark",
+        "Lucky Break",
+        "Fast Fingers",
+        "The Hustler",
+        "Snooker Snoop",
+        "Ball Buster",
+        "Table Titan"
+    ]
+
+    const setOnceRef = useRef(false);
+    useEffect(() => {
+
+        if (!nickname && !setOnceRef.current) {
+            setOnceRef.current = true;
+            setNickname(
+                nicknames[Math.floor(Math.random() * nicknames.length)]
+            )
+        }
+
+    }, [nickname])
+
     useEffect(() => {
 
         if (socket.connected) {
@@ -112,6 +148,16 @@ export default function DeathRaceLobbyPage() {
         };
 
     }, [socket.connected]);
+
+    function attemptConnection() {
+
+        // First try and establish connection via peerjs before redirecting page
+
+        const params = new URLSearchParams();
+        params.set("game_id", prepareMultiplayer.room_code);
+        router.push(`/play?${params.toString()}`);
+
+    }
 
     return (
 
@@ -171,26 +217,38 @@ export default function DeathRaceLobbyPage() {
                                 <label htmlFor="nickname">Nickname</label>
                             </div>
 
-                            <div className="form-group articles mb-0 w-100">
-                                {/* <SingleInput
-                                    value={nickname}
-                                    setValue={setNickname}
-                                    noMargin
-                                /> */}
-                                <input
-                                    autoComplete='off'
-                                    // id={item_key}
-                                    type="text"
-                                    className='text-center w-100'
-                                    // autoFocus={autoFocus && true}
-                                    // onBlur={onBlur}
-                                    // placeholder={placeholder}
-                                    value={nickname}
-                                    // onKeyDown={onKeyDown}
-                                    onChange={(e) => {
-                                        setNickname(e.target.value)
+                            <div className='d-flex'>
+                                <div className="form-group articles mb-0 w-100">
+                                    {/* <SingleInput
+                                        value={nickname}
+                                        setValue={setNickname}
+                                        noMargin
+                                    /> */}
+                                    <input
+                                        autoComplete='off'
+                                        // id={item_key}
+                                        type="text"
+                                        className='text-center w-100'
+                                        // autoFocus={autoFocus && true}
+                                        // onBlur={onBlur}
+                                        // placeholder={placeholder}
+                                        value={nickname}
+                                        // onKeyDown={onKeyDown}
+                                        onChange={(e) => {
+                                            setNickname(e.target.value)
+                                        }}
+                                    />
+                                </div>
+                                <ArticlesButton
+                                    className=""
+                                    onClick={() => {
+                                        setNickname(
+                                            nicknames[Math.floor(Math.random() * nicknames.length)]
+                                        )
                                     }}
-                                />
+                                >
+                                    <i className="fad fa-random me-0"></i>
+                                </ArticlesButton>
                             </div>
 
                             <div className='mt-1' style={{ fontSize: '0.8rem' }}>Visible to all players</div>
@@ -253,38 +311,91 @@ export default function DeathRaceLobbyPage() {
                                     Generate room code
                                 </div> */}
 
-                                <div className='w-100 mb-0'>
-                                    <ArticlesButton
-                                        className="w-50"
-                                        onClick={() => {
-                                            const params = new URLSearchParams();
-                                            params.set("game_id", "loading");
-                                            router.push(`/play?${params.toString()}`);
-                                        }}
-                                    >
-                                        Start a Game
-                                    </ArticlesButton>
+                                {prepareMultiplayer.room_code == undefined &&
+                                    <div className='w-100 mb-0'>
+                                        <ArticlesButton
+                                            className="w-50"
+                                            onClick={() => {
+                                                const params = new URLSearchParams();
+                                                params.set("game_id", "loading");
+                                                router.push(`/play?${params.toString()}`);
+                                            }}
+                                        >
+                                            Start a Game
+                                        </ArticlesButton>
+
+                                        <ArticlesButton
+                                            className="w-50"
+                                            onClick={() => {
+                                                setPrepareMultiplayer({
+                                                    room_code: ''
+                                                })
+                                            }}
+                                        >
+                                            Join a Game
+                                        </ArticlesButton>
+                                    </div>
+                                }
+
+                                {prepareMultiplayer.room_code !== undefined &&
+                                    <div>
+
+                                        <div className="alert alert-danger py-1 mb-2">
+                                            Invalid room code
+                                        </div>
+
+                                        <input
+                                            value={prepareMultiplayer.room_code}
+                                            className='w-100'
+                                            placeholder='Room code'
+                                            onChange={(e) => {
+                                                setPrepareMultiplayer({
+                                                    ...prepareMultiplayer,
+                                                    room_code: e.target.value
+                                                })
+                                            }}
+                                        >
+                                        </input>
+
+                                    </div>
+
+                                }
+
+                                <div className="d-flex justify-content-center align-items-center w-100 mt-3">
 
                                     <ArticlesButton
-                                        className="w-50"
+                                        className=""
+                                        variant='link'
                                         onClick={() => {
-                                            setPrepareMultiplayer({})
+                                            prepareMultiplayer.room_code !== undefined ?
+                                                setPrepareMultiplayer({})
+                                                :
+                                                setPrepareMultiplayer(false)
                                         }}
                                     >
-                                        Join a Game
+                                        <i className="fad fa-arrow-left me-2"></i>
+                                        Back
                                     </ArticlesButton>
+
+                                    <span className="mx-2">|</span>
+
+                                    <ArticlesButton
+                                        className=""
+                                        variant='link'
+                                        disabled={
+                                            prepareMultiplayer.room_code?.length < 4
+                                            ||
+                                            !prepareMultiplayer.room_code
+                                        }
+                                        onClick={() => {
+                                            attemptConnection()
+                                        }}
+                                    >
+                                        Enter
+                                        <i className="fad fa-arrow-right ms-2"></i>
+                                    </ArticlesButton>
+
                                 </div>
-
-                                <ArticlesButton
-                                    className="w-100 mt-3"
-                                    variant='link'
-                                    onClick={() => {
-                                        setPrepareMultiplayer(false)
-                                    }}
-                                >
-                                    <i className="fad fa-arrow-left me-2"></i>
-                                    Back
-                                </ArticlesButton>
                             </>
                         }
 
