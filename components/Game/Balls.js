@@ -168,13 +168,13 @@ function Ball({
 
     const color = getBallColor(ball);
 
-    if (!isVisible) return null;
-
     useEffect(() => {
         console.log("Passed velocity", velocity)
         if(!velocity) return
         api.velocity.set(velocity[0], velocity[1], velocity[2]);
     }, [])
+
+    if (!isVisible) return null;
 
     return (
         <group>

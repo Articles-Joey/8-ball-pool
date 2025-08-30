@@ -103,6 +103,13 @@ export const useEightBallStore = create((set) => ({
         set((prev) => ({
             currentTurn: newValue
         }))
+    },
+
+    theme: 'Light',
+    setTheme: (newValue) => {
+        set((prev) => ({
+            theme: newValue
+        }))
     }
 
 }))

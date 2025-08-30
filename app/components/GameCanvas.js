@@ -35,6 +35,8 @@ import WoodFloor from "@/components/Game/WoodFloor";
 
 function GameCanvas(props) {
 
+    const theme = useEightBallStore(state => state.theme);
+
     // const GPUTier = useDetectGPU()
 
     const [[a, b, c, d, e]] = useState(() => [...Array(5)].map(createRef))
@@ -92,8 +94,20 @@ function GameCanvas(props) {
             // {...props} 
             />
 
-            <ambientLight intensity={5} />
-            <spotLight intensity={30000} position={[-50, 100, 50]} angle={5} penumbra={1} />
+            <ambientLight intensity={theme === 'Light' ? 5 : 1} />
+            <spotLight intensity={theme === 'Light' ? 30000 : 1} position={[-50, 100, 50]} angle={5} penumbra={1} />
+
+            {theme === 'Dark' &&
+                <group position={[160, 10, 160]}>
+                    <spotLight
+                        intensity={30000}
+                        // position={[-50, 100, 50]}
+                        angle={1}
+                        penumbra={1}
+                        color={'red'}
+                    />
+                </group>
+            }
 
             {/* <pointLight position={[-10, -10, -10]} /> */}
 

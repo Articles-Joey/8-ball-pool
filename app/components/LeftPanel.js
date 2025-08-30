@@ -54,6 +54,9 @@ export default function LeftPanelContent(props) {
     const resetPeer = useEightBallStore(state => state.resetPeer);
     const setResetPeer = useEightBallStore(state => state.setResetPeer);
 
+    const theme = useEightBallStore(state => state.theme);
+    const setTheme = useEightBallStore(state => state.setTheme);
+
     const setBallPositionsUpdated = useEightBallStore(state => state.setBallPositionsUpdated);
 
     useEffect(() => {
@@ -279,6 +282,17 @@ export default function LeftPanelContent(props) {
                         {isFullscreen && <span>Exit </span>}
                         {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
                         <span>Fullscreen</span>
+                    </ArticlesButton>
+
+                    <ArticlesButton
+                        className='w-50'
+                        small
+                        onClick={() => {
+                            setTheme(theme === 'Light' ? 'Dark' : 'Light');
+                        }}
+                    >
+                        <i className="fad fa-arrow-alt-square-left"></i>
+                        <span>Theme: {theme}</span>
                     </ArticlesButton>
 
                 </div>
