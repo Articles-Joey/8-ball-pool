@@ -11,6 +11,7 @@ export default function MenuBarControls() {
     const setCuePower = useEightBallStore(state => state.setCuePower);
     const setNudge = useEightBallStore(state => state.setNudge);
     const touchControls = useEightBallStore(state => state.touchControls);
+
     // const touchControlsEnabled = useEightBallStore(state => state.touchControlsEnabled);
 
     const cuePowerRef = useRef(cuePower);
@@ -87,16 +88,27 @@ export default function MenuBarControls() {
         // define a custom handler function
         // for the contextmenu event
         const handleContextMenu = (e) => {
-            // prevent the right-click menu from appearing
-            e.preventDefault()
+            // Block context menu when the event target is inside .floating-controls
+            const target = e.target;
+            if (target && typeof target.closest === 'function') {
+                if (target.closest('.floating-controls')) {
+                    // prevent the right-click menu from appearing inside floating controls
+                    e.preventDefault();
+                    return;
+                }
+                // optional: explicitly block elements with a specific attribute too
+                if (target.closest('[data-block-context]')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+            // allow default context menu elsewhere
         }
 
-        // attach the event listener to 
-        // the document object
+        // attach the event listener to the document object
         document.addEventListener("contextmenu", handleContextMenu)
 
-        // clean up the event listener when 
-        // the component unmounts
+        // clean up the event listener when the component unmounts
         return () => {
             document.removeEventListener("contextmenu", handleContextMenu)
         }
@@ -133,6 +145,7 @@ export default function MenuBarControls() {
                     <div
                         className="floating-button launch"
                         onClick={() => {
+                            console.log("Launch")
                             setNudge(true)
                         }}
                     >

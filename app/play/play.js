@@ -24,6 +24,7 @@ import { useSocketStore } from '@/hooks/useSocketStore';
 import MenuBarControls from '../components/MenuBarControls';
 import { useEightBallStore } from '@/hooks/useEightBallStore';
 import TouchControls from '../components/TouchControls';
+import classNames from 'classnames';
 
 const GameCanvas = dynamic(() => import('../components/GameCanvas'), {
     ssr: false,
@@ -70,7 +71,7 @@ export default function GamePage() {
     const [showMenu, setShowMenu] = useState(false)
 
     // const [touchControlsEnabled, setTouchControlsEnabled] = useLocalStorageNew("game:touchControlsEnabled", false)
-    
+
     // const touchControls = useEightBallStore(state => state.touchControls);
     // const setTouchControls = useEightBallStore(state => state.setTouchControls);
 
@@ -98,13 +99,24 @@ export default function GamePage() {
         setShowMenu
     }
 
+    const showSidebar = useEightBallStore(state => state.showSidebar);
+    const setShowSidebar = useEightBallStore(state => state.setShowSidebar);
+
     // const game_name = '8 Ball Pool'
     // const game_key = '8-ball-pool'
 
     return (
 
         <div
-            className={`amcot-pool-game-page ${isFullscreen && 'fullscreen'}`}
+            className={
+                classNames(
+                    `amcot-pool-game-page`,
+                    {
+                        'fullscreen': isFullscreen,
+                        'sidebar': showSidebar
+                    }
+                )
+            }
             id="amcot-pool-game-page"
         >
 
@@ -112,16 +124,31 @@ export default function GamePage() {
 
                 <div className='flex-header align-items-center'>
 
-                    <ArticlesButton
-                        small
-                        active={showMenu}
-                        onClick={() => {
-                            setShowMenu(prev => !prev)
-                        }}
-                    >
-                        <i className="fad fa-bars"></i>
-                        <span>Menu</span>
-                    </ArticlesButton>
+                    <div className='d-flex'>
+                        <ArticlesButton
+                            small
+                            active={showMenu}
+                            onClick={() => {
+                                setShowMenu(prev => !prev)
+                            }}
+                        >
+                            <i className="fad fa-bars"></i>
+                            <span>Menu</span>
+                        </ArticlesButton>
+    
+                        <div className='d-none d-lg-block'>
+                            <ArticlesButton
+                                small
+                                active={showSidebar}
+                                onClick={() => {
+                                    setShowSidebar(!showSidebar)
+                                }}
+                            >
+                                <i className="fas fa-bars" style={{transform: 'rotate(90deg)'}}></i>
+                                <span>Sidebar</span>
+                            </ArticlesButton>
+                        </div>
+                    </div>
 
                     <MenuBarControls />
 
@@ -129,13 +156,31 @@ export default function GamePage() {
 
             </div>
 
-            <div className={`mobile-menu ${showMenu && 'show'}`}>
+            <div 
+                className={`mobile-menu ${showMenu && 'show'}`}
+                onClick={e => {
+                    // Only close if clicking the background, not a child card
+                    // Only close if clicking the background, not a card or its child
+                    let el = e.target;
+                    let isCard = false;
+                    while (el && el !== e.currentTarget) {
+                        if (el.classList && el.classList.contains('card')) {
+                            isCard = true;
+                            break;
+                        }
+                        el = el.parentElement;
+                    }
+                    if (!isCard && e.target === e.currentTarget) setShowMenu(false);
+                }}
+            >
+
                 <LeftPanelContent
                     {...panelProps}
                 />
+                
             </div>
 
-            <div className='panel-left card rounded-0 d-none d-lg-flex'>
+            <div className='panel-left card rounded-0'>
 
                 <LeftPanelContent
                     {...panelProps}
@@ -155,7 +200,7 @@ export default function GamePage() {
 
             <div className='canvas-wrap'>
 
-                <TouchControls 
+                <TouchControls
 
                 />
 

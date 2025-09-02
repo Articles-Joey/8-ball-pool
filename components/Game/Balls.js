@@ -5,28 +5,28 @@ import { useEffect, useRef, useState } from "react";
 
 import * as THREE from 'three'
 
-function getBallColor(ball) {
+// function getBallColor(ball) {
 
-    const colors = {
-        1: "yellow",
-        2: "blue",
-        3: "red",
-        4: "purple",
-        5: "orange",
-        6: "green",
-        7: "maroon",
-        8: "black",
-        9: "yellow", // Stripe starts here, logic for stripes can be added
-        10: "blue",
-        11: "red",
-        12: "purple",
-        13: "orange",
-        14: "green",
-        15: "maroon",
-    };
+//     const colors = {
+//         1: "yellow",
+//         2: "blue",
+//         3: "red",
+//         4: "purple",
+//         5: "orange",
+//         6: "green",
+//         7: "maroon",
+//         8: "black",
+//         9: "yellow", // Stripe starts here, logic for stripes can be added
+//         10: "blue",
+//         11: "red",
+//         12: "purple",
+//         13: "orange",
+//         14: "green",
+//         15: "maroon",
+//     };
 
-    return colors[ball] || "white"; // Default to white if the ball number is invalid
-}
+//     return colors[ball] || "white"; // Default to white if the ball number is invalid
+// }
 
 function getBallDetails(ball) {
 
@@ -60,7 +60,7 @@ function getBallDetails(ball) {
         {
             ball: 5,
             name: "orange",
-            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightIntensity: 50,
             emissiveLightColor: "orange"
         },
         {
@@ -84,7 +84,7 @@ function getBallDetails(ball) {
         {
             ball: 9,
             name: "yellow",
-            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightIntensity: 20,
             emissiveLightColor: "yellow"
         },
         {
@@ -108,7 +108,7 @@ function getBallDetails(ball) {
         {
             ball: 13,
             name: "orange",
-            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightIntensity: 50,
             emissiveLightColor: "orange"
         },
         {
@@ -290,7 +290,7 @@ function Ball({
         setBallPosition(ball, pos.current, vel.current, rot.current, angVel.current);
     });
 
-    const color = getBallColor(ball);
+    const color = getBallDetails(ball)?.name;
     // const emissiveLightColor = getBallDetails(ball);
 
     useEffect(() => {

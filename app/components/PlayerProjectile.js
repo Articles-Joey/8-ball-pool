@@ -48,6 +48,13 @@ export default function PlayerProjectile() {
     //     api.applyImpulse([0, 0, -500], [0, 0, 0]); // Pushes the ball along the x-axis
     // };
 
+    useEffect(() => {
+        if (nudge) {
+            nudgeBall();
+            setNudge(false);
+        }
+    }, [nudge]);
+
     const nudgeBall = () => {
         // Convert hitRotation to radians
         const radians = MathUtils.degToRad(cueRotation);
@@ -165,8 +172,8 @@ export default function PlayerProjectile() {
 
                 <pointLight
                     position={[0, 0, 0]}
-                    intensity={10}
-                    distance={10}
+                    intensity={100}
+                    distance={200}
                     color="white"
                     castShadow
                 />

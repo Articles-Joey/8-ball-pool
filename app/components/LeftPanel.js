@@ -221,9 +221,16 @@ export default function LeftPanelContent(props) {
     const [showBallPositions, setShowBallPositions] = useState(false);
 
     return (
-        <div className='w-100'>
+        <div
+            // className=''
+        >
 
-            <div className="card card-articles card-sm">
+            <div
+                className="card card-articles card-sm"
+                onClick={(e) => {
+
+                }}
+            >
 
                 <div className="card-body">
 

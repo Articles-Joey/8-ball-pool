@@ -1,12 +1,13 @@
 "use client"
+import { persist } from 'zustand/middleware'
 // import { create } from 'zustand'
 import { createWithEqualityFn as create } from 'zustand/traditional'
 // import { nanoid } from 'nanoid'
 
-const getLocalStorage = (key) => JSON.parse(window.localStorage.getItem(key))
-const setLocalStorage = (key, value) => window.localStorage.setItem(key, JSON.stringify(value))
+// const getLocalStorage = (key) => JSON.parse(window.localStorage.getItem(key))
+// const setLocalStorage = (key, value) => window.localStorage.setItem(key, JSON.stringify(value))
 
-export const useEightBallStore = create((set) => ({
+export const useEightBallStore = create(persist((set) => ({
 
     debug: false,
     setDebug: (newValue) => {
@@ -31,7 +32,7 @@ export const useEightBallStore = create((set) => ({
         }))
     },
 
-    touchControls: false,
+    touchControls: true,
     setTouchControls: (newValue) => {
         set((prev) => ({
             touchControls: newValue
@@ -63,6 +64,14 @@ export const useEightBallStore = create((set) => ({
     setNudge: (newValue) => {
         set((prev) => ({
             nudge: newValue
+        }))
+    },
+
+    // Only available on larger screens
+    showSidebar: true,
+    setShowSidebar: (newValue) => {
+        set((prev) => ({
+            showSidebar: newValue
         }))
     },
 
@@ -136,11 +145,23 @@ export const useEightBallStore = create((set) => ({
         }))
     },
 
-    theme: 'Light',
+    theme: null,
     setTheme: (newValue) => {
         set((prev) => ({
             theme: newValue
         }))
     }
 
+}), {
+    name: 'eight-ball-settings',
+    partialize: (state) => ({
+        debug: state.debug,
+        controlType: state.controlType,
+        touchControls: state.touchControls,
+        music: state.music,
+        // cueRotation: state.cueRotation,
+        // cuePower: state.cuePower,
+        showSidebar: state.showSidebar,
+        theme: state.theme
+    })
 }))

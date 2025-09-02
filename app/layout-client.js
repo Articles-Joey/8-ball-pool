@@ -9,6 +9,11 @@ export default function LayoutClient({ children }) {
 
     useEffect(() => {
 
+        if (theme == null) {
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            useEightBallStore.getState().setTheme(prefersDark ? "Dark" : "Light");
+        }
+
         if (theme == "Dark") {
             document.body.setAttribute("data-bs-theme", 'dark');
         } else {

@@ -378,10 +378,17 @@ function StoneBrickWall(props) {
                 <meshStandardMaterial {...texture} />
             </mesh>
 
-            <mesh position={[0, 0, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
+            <mesh position={[0, -55, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
                 <planeGeometry args={[props.args[0], 20]} />
                 <meshStandardMaterial
-                    color={"darkgreen"}
+                    color={"saddlebrown"}
+                />
+            </mesh>
+
+            <mesh position={[0, 67.5, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
+                <planeGeometry args={[props.args[0], 5]} />
+                <meshStandardMaterial
+                    color={"saddlebrown"}
                 />
             </mesh>
 
@@ -563,6 +570,15 @@ function Wall({ position, args, inner }) {
                 emissive={"#054600"} // glow color
                 emissiveIntensity={0.90} // adjust for subtle glow
             />
+            {/* <rectAreaLight
+                width={30}
+                height={30}
+                color={"limegreen"}
+                intensity={0.3}
+                distance={100}
+                position={[0, 2, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+            /> */}
         </mesh>
     )
 
