@@ -14,6 +14,8 @@ import { ModelKennyNLFurnitureTableGlass } from "@/components/Game/tableGlass";
 
 import { Model as WomenPunkModel } from "@/components/Game/PunkMan";
 import { Model as MenPunkModel } from "@/components/Game/PunkWoman";
+import { Model as PunkManSleep } from "@/components/Game/PunkManSleep";
+
 import Tree from "@/components/Game/Tree";
 import { ModelKennyNLFurnitureCardboardBoxOpen } from "@/components/Game/cardboardBoxOpen";
 import { Star } from "@/components/Game/Star";
@@ -32,6 +34,9 @@ import Dartboard from "@/components/Game/Dartboard";
 import { Table, TableBottom, TableLegs } from "@/components/Game/Table";
 import Balls from "@/components/Game/Balls";
 import WoodFloor from "@/components/Game/WoodFloor";
+import FlickerFireLight from "@/components/Game/FlickerFireLight";
+import { degToRad } from "three/src/math/MathUtils";
+import CameraControls from "@/components/Game/CameraControls";
 
 function GameCanvas(props) {
 
@@ -82,9 +87,11 @@ function GameCanvas(props) {
     return (
         <Canvas camera={{ position: [-10, 40, 40], fov: 50 }}>
 
-            <OrbitControls
+            <CameraControls />
+
+            {/* <OrbitControls
             // autoRotate={gameState?.status == 'In Lobby'}
-            />
+            /> */}
 
             <Sky
                 // distance={450000}
@@ -98,14 +105,15 @@ function GameCanvas(props) {
             <spotLight intensity={theme === 'Light' ? 30000 : 1} position={[-50, 100, 50]} angle={5} penumbra={1} />
 
             {theme === 'Dark' &&
-                <group position={[160, 10, 160]}>
-                    <spotLight
+                <group position={[145, -10, 145]}>
+                    {/* <spotLight
                         intensity={30000}
                         // position={[-50, 100, 50]}
                         angle={1}
                         penumbra={1}
                         color={'red'}
-                    />
+                    /> */}
+                    <FlickerFireLight />
                 </group>
             }
 
@@ -117,29 +125,32 @@ function GameCanvas(props) {
                 args={[300, 300]}
             />
 
-            <StoneBrickWall
-                // rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, 0, -150]}
-                args={[300, 300]}
-            />
+            <group position={[0, 45, 0]}>
+                <StoneBrickWall
+                    // rotation={[-Math.PI / 2, 0, 0]}
+                    position={[0, 0, -150]}
+                    args={[300, 150]}
+                />
 
-            <StoneBrickWall
-                rotation={[-Math.PI / 1, 0, 0]}
-                position={[0, 0, 150]}
-                args={[300, 300]}
-            />
+                <StoneBrickWall
+                    rotation={[0, 0, 0]}
+                    invertFace={true}
+                    position={[0, 0, 150]}
+                    args={[300, 150]}
+                />
 
-            <StoneBrickWall
-                rotation={[0, -Math.PI / 2, 0]}
-                position={[150, 0, 0]}
-                args={[300, 300]}
-            />
+                <StoneBrickWall
+                    rotation={[0, -Math.PI / 2, 0]}
+                    position={[150, 0, 0]}
+                    args={[300, 150]}
+                />
 
-            <StoneBrickWall
-                rotation={[0, -Math.PI / -2, 0]}
-                position={[-150, 0, 0]}
-                args={[300, 300]}
-            />
+                <StoneBrickWall
+                    rotation={[0, -Math.PI / -2, 0]}
+                    position={[-150, 0, 0]}
+                    args={[300, 150]}
+                />
+            </group>
 
             <TableLegs />
 
@@ -163,6 +174,12 @@ function GameCanvas(props) {
             <MenPunkModel
                 position={[0, -30, -80]}
                 scale={30}
+            />
+
+            <PunkManSleep
+                position={[16, -11, -125]}
+                scale={30}
+                rotation={[0, -Math.PI / 2, 0]}
             />
 
             <ModelDoorway
@@ -348,14 +365,38 @@ function StoneBrickWall(props) {
         // aoMap: `${base_link}StoneBricksSplitface001_AO_1K.jpg`,
     })
 
-    texture.map.repeat.set(7, 7);
+    texture.map.repeat.set(7, 3.5);
     texture.map.wrapS = texture.map.wrapT = THREE.RepeatWrapping;
+
+    // If invertFace is true, flip the plane by rotating 180 degrees around Y
+    const planeRotation = props.invertFace ? [0, Math.PI, 0] : [0, 0, 0];
 
     return (
         <group {...props}>
-            <mesh receiveShadow>
+            <mesh receiveShadow rotation={planeRotation}>
                 <planeGeometry {...props} />
                 <meshStandardMaterial {...texture} />
+            </mesh>
+
+            <mesh position={[0, 0, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
+                <planeGeometry args={[props.args[0], 20]} />
+                <meshStandardMaterial
+                    color={"darkgreen"}
+                />
+            </mesh>
+
+            <mesh position={[0, -70, 0]}>
+                <boxGeometry args={[props.args[0], 10]} />
+                <meshStandardMaterial
+                    color={"black"}
+                />
+            </mesh>
+
+            <mesh position={[0, 72.5, 0]} rotation={[0, degToRad(0), 0]}>
+                <boxGeometry args={[props.args[0], 5]} />
+                <meshStandardMaterial
+                    color={"black"}
+                />
             </mesh>
         </group>
     )
@@ -516,7 +557,12 @@ function Wall({ position, args, inner }) {
         <mesh ref={ref} castShadow>
             <boxGeometry args={args} />
             {/* <BeachBall /> */}
-            <meshStandardMaterial color={inner ? "#054600" : "chocolate"} />
+            {/* <meshStandardMaterial color={inner ? "#054600" : "chocolate"} /> */}
+            <meshStandardMaterial
+                color={inner ? "#054600" : "chocolate"}
+                emissive={"#054600"} // glow color
+                emissiveIntensity={0.90} // adjust for subtle glow
+            />
         </mesh>
     )
 

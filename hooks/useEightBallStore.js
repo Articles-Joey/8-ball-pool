@@ -66,17 +66,48 @@ export const useEightBallStore = create((set) => ({
         }))
     },
 
+    resetCameraRequest: false,
+    setResetCameraRequest: (newValue) => {
+        set((prev) => ({
+            resetCameraRequest: newValue
+        }))
+    },
+
     ballPositions: [],
-    setBallPosition: (ballNumber, position, velocity) => {
+    setBallPosition: (ballNumber, position, velocity, rotation) => {
         set((prev) => {
+
             // return prev.ballPositions
-            const updatedPositions = [...prev.ballPositions];
-            updatedPositions[ballNumber] = {
-                ball: ballNumber,
-                position: [position.x, position.y, position.z],
-                velocity: [velocity.x, velocity.y, velocity.z]
+
+            // ---
+
+            // let updatedPositions = [...prev.ballPositions];
+
+            // let realIndex = updatedPositions.findIndex(pos => pos.ball === ballNumber);
+
+            // updatedPositions[realIndex] = {
+            //     ball: ballNumber,
+            //     position: [position.x, position.y, position.z],
+            //     velocity: [velocity.x, velocity.y, velocity.z],
+            //     rotation: [rotation.x, rotation.y, rotation.z]
+            // };
+            // return { ballPositions: updatedPositions };
+
+            // ---
+
+            return {
+                ballPositions: prev.ballPositions.map(pos =>
+                    pos.ball === ballNumber
+                        ? {
+                            ball: ballNumber,
+                            position: [position.x, position.y, position.z],
+                            velocity: [velocity.x, velocity.y, velocity.z],
+                            rotation: [rotation.x, rotation.y, rotation.z]
+                        }
+                        : pos
+                )
             };
-            return { ballPositions: updatedPositions };
+
         });
     },
     setBallPositions: (newValue) => {

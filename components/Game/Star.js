@@ -30,6 +30,7 @@ export function Star(props) {
 
     return (
         <group {...props} dispose={null}>
+
             <mesh
                 ref={starRef}
                 castShadow
@@ -38,7 +39,18 @@ export function Star(props) {
                 material={materials["Yellow.030"]}
                 rotation={[Math.PI / 2, 0, 0]}
                 position={[0, 1, 0]}
+                emissive={"yellow"} // glow color
+                emissiveIntensity={10} // adjust for subtle glow
             />
+
+            <pointLight
+                position={[0.6, 1, 0.6]}
+                intensity={2000}
+                distance={200}
+                color={"yellow"}
+                castShadow
+            />
+
         </group>
     );
 }

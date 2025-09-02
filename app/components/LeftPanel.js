@@ -58,6 +58,7 @@ export default function LeftPanelContent(props) {
     const setTheme = useEightBallStore(state => state.setTheme);
 
     const setBallPositionsUpdated = useEightBallStore(state => state.setBallPositionsUpdated);
+    const setResetCameraRequest = useEightBallStore(state => state.setResetCameraRequest);
 
     useEffect(() => {
         setResetPeer(false);
@@ -425,7 +426,7 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                onClick={reloadScene}
+                                onClick={() => setResetCameraRequest(true)}
                             >
                                 <i className="fad fa-redo"></i>
                                 Reset Camera

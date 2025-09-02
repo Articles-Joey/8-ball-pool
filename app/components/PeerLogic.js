@@ -31,6 +31,11 @@ export default function PeerLogic() {
     const isHost = useEightBallStore(state => state.isHost);
     const setIsHost = useEightBallStore(state => state.setIsHost);
 
+    const cuePower = useEightBallStore(state => state.cuePower);
+    // const setCuePower = useEightBallStore(state => state.setCuePower);
+    const cueRotation = useEightBallStore(state => state.cueRotation);
+    // const setCueRotation = useEightBallStore(state => state.setCueRotation);
+
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([]);
 
@@ -204,7 +209,9 @@ export default function PeerLogic() {
             type: "Ball Positions",
             date: new Date(),
             peerId,
-            ballPositions: ballPositions
+            ballPositions: ballPositions,
+            cuePower,
+            cueRotation
         }
 
         connectionRef.current.send({
@@ -220,6 +227,46 @@ export default function PeerLogic() {
 
         // setMessage('')
     }
+
+    useEffect(() => {
+        let fastIntervalId;
+        let slowIntervalId;
+
+        console.log("Test", isHost)
+
+        // Fast interval: 30 times per second
+        if (isHost) {
+            fastIntervalId = setInterval(() => {
+
+                let ballPositions = useEightBallStore.getState().ballPositions;
+                let cuePower = useEightBallStore.getState().cuePower;
+                let cueRotation = useEightBallStore.getState().cueRotation;
+
+                if (connectionRef.current) {
+                    let data = {
+                        type: "Ball Positions",
+                        date: new Date(),
+                        peerId,
+                        ballPositions: ballPositions,
+                        cuePower,
+                        cueRotation
+                    };
+                    connectionRef.current.send({ ...data });
+                }
+            }, 1000 / 5); // 5 times per second
+
+            // Slow interval: once per second
+            slowIntervalId = setInterval(() => {
+                console.log("Sending Ball Positions (logged every second)...");
+            }, 1000);
+        }
+
+        return () => {
+            if (fastIntervalId) clearInterval(fastIntervalId);
+            if (slowIntervalId) clearInterval(slowIntervalId);
+        };
+
+    }, [isHost, peerId]);
 
     return (
         <div
@@ -310,7 +357,7 @@ export default function PeerLogic() {
 
                         <ArticlesButton
                             size="sm"
-                            className="w-100"
+                            className="w-50"
                             active={false}
                             onClick={() => {
                                 sendMessage()
@@ -318,6 +365,18 @@ export default function PeerLogic() {
                         >
                             <i className="fad fa-redo"></i>
                             Test Message
+                        </ArticlesButton>
+
+                        <ArticlesButton
+                            size="sm"
+                            className="w-50"
+                            active={false}
+                            onClick={() => {
+                                setIsHost(!isHost)
+                            }}
+                        >
+                            <i className="fad fa-redo"></i>
+                            Host: {isHost ? 'True' : 'False'}
                         </ArticlesButton>
 
                     </div>

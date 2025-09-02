@@ -28,7 +28,109 @@ function getBallColor(ball) {
     return colors[ball] || "white"; // Default to white if the ball number is invalid
 }
 
-// Ball initial positions and numbers
+function getBallDetails(ball) {
+
+    let defaultEmissiveValue = 10;
+
+    const ballProperties = [
+        {
+            ball: 1,
+            name: "yellow",
+            emissiveLightIntensity: 20,
+            emissiveLightColor: "yellow"
+        },
+        {
+            ball: 2,
+            name: "blue",
+            emissiveLightIntensity: 500,
+            emissiveLightColor: "blue"
+        },
+        {
+            ball: 3,
+            name: "red",
+            emissiveLightIntensity: 200,
+            emissiveLightColor: "red"
+        },
+        {
+            ball: 4,
+            name: "purple",
+            emissiveLightIntensity: 1000,
+            emissiveLightColor: "purple"
+        },
+        {
+            ball: 5,
+            name: "orange",
+            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightColor: "orange"
+        },
+        {
+            ball: 6,
+            name: "green",
+            emissiveLightIntensity: 30,
+            emissiveLightColor: "#32CD32"
+        },
+        {
+            ball: 7,
+            name: "maroon",
+            emissiveLightIntensity: 500,
+            emissiveLightColor: "maroon"
+        },
+        {
+            ball: 8,
+            name: "black",
+            emissiveLightIntensity: 100,
+            emissiveLightColor: "#333333"
+        },
+        {
+            ball: 9,
+            name: "yellow",
+            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightColor: "yellow"
+        },
+        {
+            ball: 10,
+            name: "blue",
+            emissiveLightIntensity: 500,
+            emissiveLightColor: "blue"
+        },
+        {
+            ball: 11,
+            name: "red",
+            emissiveLightIntensity: 200,
+            emissiveLightColor: "red"
+        },
+        {
+            ball: 12,
+            name: "purple",
+            emissiveLightIntensity: 1000,
+            emissiveLightColor: "purple"
+        },
+        {
+            ball: 13,
+            name: "orange",
+            emissiveLightIntensity: defaultEmissiveValue,
+            emissiveLightColor: "orange"
+        },
+        {
+            ball: 14,
+            name: "green",
+            emissiveLightIntensity: 30,
+            emissiveLightColor: "#32CD32"
+        },
+        {
+            ball: 15,
+            name: "maroon",
+            emissiveLightIntensity: 500,
+            emissiveLightColor: "maroon"
+        }
+    ];
+
+    const ballObj = ballProperties.find(b => b.ball === ball);
+    return ballObj || { name: "white", emissiveLightIntensity: defaultEmissiveValue, emissiveLightColor: "white" };
+
+    return colors[ball] || "white"; // Default to white if the ball number is invalid
+}
+
 const ballConfigs = [
     { position: [0, 10, -20], ball: 1 },
     { position: [1.15, 10, -21.75], ball: 9 },
@@ -106,6 +208,8 @@ export default function Balls() {
                     key={cfg.ball}
                     position={cfg.position}
                     velocity={cfg.velocity}
+                    angularVelocity={cfg.angularVelocity}
+                    rotation={cfg.rotation}
                     ball={cfg.ball}
                 // setBallPositions={setBallPositions}
                 />
@@ -117,10 +221,13 @@ export default function Balls() {
 function Ball({
     position,
     velocity,
+    angularVelocity,
+    rotation,
     ball,
     // setBallPositions 
 }) {
 
+    const theme = useEightBallStore(state => state.theme);
     const ballPositions = useEightBallStore(state => state.ballPositions);
     const setBallPosition = useEightBallStore(state => state.setBallPosition);
 
@@ -145,34 +252,54 @@ function Ball({
     }));
 
     const pos = useRef(new THREE.Vector3(0, 0, 0));
+    const rot = useRef(new THREE.Vector3(0, 0, 0));
     const vel = useRef(new THREE.Vector3(0, 0, 0));
+    const angVel = useRef(new THREE.Vector3(0, 0, 0));
 
     useEffect(() => {
         const unsubPos = api.position.subscribe((v) => {
             pos.current = new THREE.Vector3(v[0], v[1], v[2]);
+
+            if (v?.[1] < -10) {
+                api.sleep();
+            }
+
+        });
+        const unsubRot = api.rotation.subscribe((v) => {
+            // console.log("velocity.current", velocity.current)
+            rot.current = new THREE.Vector3(v?.[0], v?.[1], v?.[2]);
         });
         const unsubVel = api.velocity.subscribe((v) => {
             // console.log("velocity.current", velocity.current)
-            vel.current = new THREE.Vector3(v[0], v[1], v[2]);
+            vel.current = new THREE.Vector3(v?.[0], v?.[1], v?.[2]);
+        });
+        const unsubAngVel = api.angularVelocity.subscribe((v) => {
+            // console.log("velocity.current", velocity.current)
+            angVel.current = new THREE.Vector3(v?.[0], v?.[1], v?.[2]);
         });
         return () => {
             unsubPos();
             unsubVel();
+            // unsubAngVel();
+            // unsubRot();
         };
-    }, [api.position, api.velocity]);
+    }, [api.position, api.velocity, api.rotation, api.angularVelocity]);
 
     // Update ball position and velocity in store as it moves
     useFrame(() => {
-        setBallPosition(ball, pos.current, vel.current);
+        setBallPosition(ball, pos.current, vel.current, rot.current, angVel.current);
     });
 
     const color = getBallColor(ball);
+    // const emissiveLightColor = getBallDetails(ball);
 
     useEffect(() => {
-        console.log("Passed velocity", velocity)
-        if(!velocity) return
-        api.velocity.set(velocity[0], velocity[1], velocity[2]);
-    }, [])
+        // console.log("Passed velocity", velocity)
+        if (!velocity) return
+        api.velocity.set(velocity?.[0], velocity?.[1], velocity?.[2]);
+        api.rotation.set(rotation?.[0], rotation?.[1], rotation?.[2]);
+        api.angularVelocity.set(angularVelocity?.[0], angularVelocity?.[1], angularVelocity?.[2]);
+    }, []);
 
     if (!isVisible) return null;
 
@@ -180,7 +307,24 @@ function Ball({
         <group>
             <mesh castShadow ref={ref}>
                 <sphereGeometry args={[1, 10, 10]} />
-                <meshStandardMaterial color={color} />
+
+                {/* <meshStandardMaterial color={color} /> */}
+                <meshStandardMaterial
+                    color={color}
+                    emissive={"white"} // glow color
+                    emissiveIntensity={0.02} // adjust for subtle glow
+                />
+
+                {theme == "Dark" && (
+                    <pointLight
+                        position={[0, 0, 0]}
+                        intensity={getBallDetails(ball).emissiveLightIntensity}
+                        distance={10}
+                        color={getBallDetails(ball).emissiveLightColor}
+                        castShadow
+                    />
+                )}
+
                 {ball > 8 && <group>
                     <mesh
                         castShadow
