@@ -1,6 +1,11 @@
+import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { Image } from "@react-three/drei";
+import { degToRad } from "three/src/math/MathUtils";
 
 export default function Dartboard() {
+
+    const theme = useEightBallStore(state => state.theme);
+
     return (
         <group position={[-80, 20, 150]}>
 
@@ -12,6 +17,18 @@ export default function Dartboard() {
                 transparent={true}
                 alt="Dartboard"
             />
+
+            {theme === 'Dark' &&
+                <rectAreaLight
+                    width={20}
+                    height={20}
+                    color={"red"}
+                    intensity={25}
+                    distance={100}
+                    position={[0, 0, -20]}
+                    rotation={[0, degToRad(-180), 0]}
+                />
+            }
 
             <mesh
                 castShadow
