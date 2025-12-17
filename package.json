@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "dev": "next dev --turbopack -p 3015",
-    "build": "next build",
+    "dev": "next dev --webpack -p 3015",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -24,10 +24,10 @@
     "date-fns": "^4.1.0",
     "next": "^16.0.7",
     "peerjs": "^1.5.5",
-    "react": "^19.2.1",
+    "react": "^19",
     "react-bootstrap": "^2.10.10",
     "react-countdown": "^2.3.6",
-    "react-dom": "^19.2.1",
+    "react-dom": "^19",
     "react-hotkeys-hook": "^5.1.0",
     "sass": "^1.94.2",
     "socket.io-client": "^4.8.1",
@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.7"
   }
