@@ -42,7 +42,8 @@ import { degToRad } from "three/src/math/MathUtils";
 
 function GameCanvas(props) {
 
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useEightBallStore(state => state.darkMode);
 
     // const GPUTier = useDetectGPU()
 
@@ -103,10 +104,10 @@ function GameCanvas(props) {
             // {...props} 
             />
 
-            <ambientLight intensity={theme === 'Light' ? 5 : 1} />
-            <spotLight intensity={theme === 'Light' ? 30000 : 1} position={[-50, 100, 50]} angle={5} penumbra={1} />
+            <ambientLight intensity={darkMode ? 1 : 5} />
+            <spotLight intensity={darkMode ? 1 : 30000} position={[-50, 100, 50]} angle={5} penumbra={1} />
 
-            {theme === 'Dark' &&
+            {darkMode &&
                 <group position={[145, -10, 145]}>
                     {/* <spotLight
                         intensity={30000}
@@ -165,7 +166,7 @@ function GameCanvas(props) {
                 rotation={[0, -Math.PI / -2, 0]}
             />
 
-            {theme === 'Dark' &&
+            {darkMode &&
                 <rectAreaLight
                     width={50}
                     height={50}

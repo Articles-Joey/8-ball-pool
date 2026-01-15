@@ -1,29 +1,30 @@
 "use client"
-import { useEffect } from "react";
-
-import { useEightBallStore } from "@/hooks/useEightBallStore";
+// import { useEffect } from "react";
+// import { useEightBallStore } from "@/hooks/useEightBallStore";
+import GlobalBody from '@articles-media/articles-dev-box/GlobalBody';
 
 export default function LayoutClient({ children }) {
 
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (theme == null) {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            useEightBallStore.getState().setTheme(prefersDark ? "Dark" : "Light");
-        }
+    //     if (theme == null) {
+    //         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    //         useEightBallStore.getState().setTheme(prefersDark ? "Dark" : "Light");
+    //     }
 
-        if (theme == "Dark") {
-            document.body.setAttribute("data-bs-theme", 'dark');
-        } else {
-            document.body.setAttribute("data-bs-theme", 'light');
-        }
+    //     if (theme == "Dark") {
+    //         document.body.setAttribute("data-bs-theme", 'dark');
+    //     } else {
+    //         document.body.setAttribute("data-bs-theme", 'light');
+    //     }
 
-    }, [theme]);
+    // }, [theme]);
 
     return (
         <>
+            <GlobalBody />
         </>
     );
 }

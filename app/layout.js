@@ -9,8 +9,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // import "./globals.css";
 import "@/styles/index.scss";
+
+import "@articles-media/articles-dev-box/dist/style.css";
+
 import SocketLogicHandler from "@/components/SocketLogicHandler";
 import LayoutClient from './layout-client';
+import { Suspense } from 'react';
+import DarkModeHandler from '@/components/UI/DarkModeHandler';
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -24,7 +29,7 @@ import LayoutClient from './layout-client';
 
 export const metadata = {
   title: "8 Ball Pool",
-  description: "Play 8 Ball Pool! Turn based singleplayer and multiplayer game by Articles Media",
+  description: "Play 8 Ball Pool! Turn based single player and multiplayer game by Articles Media",
 };
 
 export default function RootLayout({ children }) {
@@ -32,11 +37,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
 
       <head>
-        
-        <link
+
+        {/* <link
           rel="stylesheet"
           href={`${process.env.NEXT_PUBLIC_CDN}fonts/fontawsome/css/all.min.css`}
-        />
+        /> */}
 
       </head>
 
@@ -44,9 +49,11 @@ export default function RootLayout({ children }) {
       // className={`${geistSans.variable} ${geistMono.variable}`}
       >
 
-        <LayoutClient />
-
-        <SocketLogicHandler />
+        <Suspense>
+          <LayoutClient />
+          <DarkModeHandler />
+          <SocketLogicHandler />
+        </Suspense>
 
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>

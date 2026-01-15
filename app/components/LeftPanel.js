@@ -54,8 +54,10 @@ export default function LeftPanelContent(props) {
     const resetPeer = useEightBallStore(state => state.resetPeer);
     const setResetPeer = useEightBallStore(state => state.setResetPeer);
 
-    const theme = useEightBallStore(state => state.theme);
-    const setTheme = useEightBallStore(state => state.setTheme);
+    const darkMode = useEightBallStore(state => state.darkMode);
+    const setDarkMode = useEightBallStore(state => state.setDarkMode);
+    // const theme = useEightBallStore(state => state.theme);
+    // const setTheme = useEightBallStore(state => state.setTheme);
 
     const setBallPositionsUpdated = useEightBallStore(state => state.setBallPositionsUpdated);
     const setResetCameraRequest = useEightBallStore(state => state.setResetCameraRequest);
@@ -220,9 +222,12 @@ export default function LeftPanelContent(props) {
 
     const [showBallPositions, setShowBallPositions] = useState(false);
 
+    const showSidebar = useEightBallStore(state => state.showSidebar);
+    const setShowSidebar = useEightBallStore(state => state.setShowSidebar);
+
     return (
         <div
-            // className=''
+        // className=''
         >
 
             <div
@@ -296,11 +301,23 @@ export default function LeftPanelContent(props) {
                         className='w-50'
                         small
                         onClick={() => {
-                            setTheme(theme === 'Light' ? 'Dark' : 'Light');
+                            setDarkMode(!darkMode);
                         }}
                     >
                         <i className="fad fa-arrow-alt-square-left"></i>
-                        <span>Theme: {theme}</span>
+                        <span>Theme: {darkMode ? 'Dark' : 'Light'}</span>
+                    </ArticlesButton>
+
+                    <ArticlesButton
+                        small
+                        active={showSidebar}
+                        className='w-50'
+                        onClick={() => {
+                            setShowSidebar(!showSidebar)
+                        }}
+                    >
+                        <i className="fas fa-bars" style={{ transform: 'rotate(90deg)' }}></i>
+                        <span>Sidebar</span>
                     </ArticlesButton>
 
                 </div>

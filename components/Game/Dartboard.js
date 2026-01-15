@@ -4,7 +4,8 @@ import { degToRad } from "three/src/math/MathUtils";
 
 export default function Dartboard() {
 
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useEightBallStore(state => state.darkMode);
 
     return (
         <group position={[-80, 20, 150]}>
@@ -18,7 +19,7 @@ export default function Dartboard() {
                 alt="Dartboard"
             />
 
-            {theme === 'Dark' &&
+            {darkMode &&
                 <rectAreaLight
                     width={20}
                     height={20}

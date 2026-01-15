@@ -22,6 +22,19 @@ import IsDev from '@/components/UI/IsDev';
 import { useSocketStore } from '@/hooks/useSocketStore';
 import { useRouter } from 'next/navigation';
 
+import Ad from '@articles-media/articles-dev-box/Ad';
+const ReturnToLauncherButton = dynamic(() =>
+    import('@articles-media/articles-dev-box/ReturnToLauncherButton'),
+    { ssr: false }
+);
+
+import { useStore } from '@/hooks/useStore';
+
+import { useUserDetails, useUserToken } from '@articles-media/articles-dev-box';
+
+// import useUserToken from '@/hooks/user/useUserToken';
+// import useUserDetails from '@/hooks/user/useUserDetails';
+
 // import GameScoreboard from 'components/Games/GameScoreboard'
 
 // const Ad = dynamic(() => import('components/Ads/Ad'), {
@@ -43,12 +56,44 @@ const SettingsModal = dynamic(
 //     { ssr: false }
 // )
 
-const assets_src = 'games/Cannon/'
+const game_key = '8-ball-pool'
+const game_name = '8 Ball Pool'
 
-const game_key = 'death-race'
-const game_name = 'Death Race'
+export default function LandingPage() {
 
-export default function DeathRaceLobbyPage() {
+    // const {
+    //     data: userToken,
+    //     error: userTokenError,
+    //     isLoading: userTokenLoading,
+    //     mutate: userTokenMutate
+    // } = useUserToken();
+
+    // const {
+    //     data: userDetails,
+    //     error: userDetailsError,
+    //     isLoading: userDetailsLoading,
+    //     mutate: userDetailsMutate
+    // } = useUserDetails({
+    //     token: userToken
+    // });
+
+    const {
+        data: userToken,
+        error: userTokenError,
+        isLoading: userTokenLoading,
+        mutate: userTokenMutate
+    } = useUserToken(
+        "3015"
+    );
+
+    const {
+        data: userDetails,
+        error: userDetailsError,
+        isLoading: userDetailsLoading,
+        mutate: userDetailsMutate
+    } = useUserDetails({
+        token: userToken
+    });
 
     const {
         socket,
@@ -60,6 +105,8 @@ export default function DeathRaceLobbyPage() {
 
     // const userReduxState = useSelector((state) => state.auth.user_details)
     const userReduxState = false
+
+    const darkMode = useStore(state => state.darkMode)
 
     const [nickname, setNickname] = useLocalStorageNew("game:nickname", '')
 
@@ -82,8 +129,8 @@ export default function DeathRaceLobbyPage() {
         //     console.log("Is user")
         // }
 
-        socket.on('game:death-race-landing-details', function (msg) {
-            console.log('game:death-race-landing-details', msg)
+        socket.on('game:8-ball-pool-landing-details', function (msg) {
+            console.log('game:8-ball-pool-landing-details', msg)
 
             if (JSON.stringify(msg) !== JSON.stringify(lobbyDetails)) {
                 setLobbyDetails(msg)
@@ -91,14 +138,14 @@ export default function DeathRaceLobbyPage() {
         });
 
         return () => {
-            socket.off('game:death-race-landing-details');
+            socket.off('game:8-ball-pool-landing-details');
         };
 
     }, [])
 
     useEffect(() => {
 
-        localStorage.setItem('game:four-frogs:rulesAnControls', showInfoModal)
+        localStorage.setItem('game:8-ball-pool:rulesAnControls', showInfoModal)
 
     }, [showInfoModal])
 
@@ -140,11 +187,11 @@ export default function DeathRaceLobbyPage() {
     useEffect(() => {
 
         if (socket.connected) {
-            socket.emit('join-room', 'game:death-race-landing');
+            socket.emit('join-room', 'game:8-ball-pool-landing');
         }
 
         return function cleanup() {
-            socket.emit('leave-room', 'game:death-race-landing')
+            socket.emit('leave-room', 'game:8-ball-pool-landing')
         };
 
     }, [socket.connected]);
@@ -196,34 +243,109 @@ export default function DeathRaceLobbyPage() {
             <div className="container d-flex flex-column-reverse flex-lg-row justify-content-center align-items-center">
 
                 <div
-                    className="card card-articles card-sm mb-3 mb-lg-0"
                     style={{ "width": "20rem" }}
                 >
+                    <div
+                        className="card card-articles card-sm mb-2"
+                    >
 
-                    {/* <div style={{ position: 'relative', height: '200px' }}>
-                        <Image
-                            src={Logo}
-                            alt=""
-                            fill
-                            style={{ objectFit: 'cover' }}
-                        />
-                    </div> */}
+                        <div style={{ position: 'relative', height: '200px' }}>
+                            <Image
+                                src={"/img/logo.webp"}
+                                alt=""
+                                fill
+                                style={{ objectFit: 'cover' }}
+                            />
+                        </div>
 
-                    <div className='card-header d-flex align-items-center'>
+                        <div className='card-header d-flex align-items-center'>
 
-                        <div className="flex-grow-1">
+                            <div className="flex-grow-1">
 
-                            <div>
-                                <label htmlFor="nickname">Nickname</label>
+                                <div>
+                                    <label htmlFor="nickname">Nickname</label>
+                                </div>
+
+                                <div className='d-flex align-items-end'>
+                                    <div className="form-group articles mb-0 w-100">
+                                        {/* <SingleInput
+                                            value={nickname}
+                                            setValue={setNickname}
+                                            noMargin
+                                        /> */}
+                                        <input
+                                            autoComplete='off'
+                                            // id={item_key}
+                                            type="text"
+                                            className='w-100'
+                                            // autoFocus={autoFocus && true}
+                                            // onBlur={onBlur}
+                                            // placeholder={placeholder}
+                                            value={nickname}
+                                            // onKeyDown={onKeyDown}
+                                            onChange={(e) => {
+                                                setNickname(e.target.value)
+                                            }}
+                                            style={{
+                                                borderBottom: "3px solid var(--articles-primary-color)"
+                                            }}
+                                        />
+                                    </div>
+                                    <ArticlesButton
+                                        className=""
+                                        onClick={() => {
+                                            setNickname(
+                                                nicknames[Math.floor(Math.random() * nicknames.length)]
+                                            )
+                                        }}
+                                    >
+                                        <i className="fad fa-random me-0"></i>
+                                    </ArticlesButton>
+                                </div>
+
+                                <div className='mt-1' style={{ fontSize: '0.8rem' }}>Visible to all players</div>
+
                             </div>
+                        </div>
 
-                            <div className='d-flex'>
-                                <div className="form-group articles mb-0 w-100">
-                                    {/* <SingleInput
-                                        value={nickname}
-                                        setValue={setNickname}
-                                        noMargin
-                                    /> */}
+                        <div className="card-body">
+
+                            {prepareMultiplayer == false &&
+                                <>
+                                    <Link
+                                        href={{
+                                            pathname: `/play`,
+                                            // query: {
+                                            //     server: id
+                                            // }
+                                        }}
+                                    >
+                                        <ArticlesButton className="w-100 mb-3">
+                                            <i className="fad fa-user me-2"></i>
+                                            Play Single Player
+                                        </ArticlesButton>
+                                    </Link>
+
+
+                                    <ArticlesButton
+                                        className="w-100 mb-1"
+                                        onClick={() => {
+                                            setPrepareMultiplayer({})
+                                        }}
+                                    >
+                                        <i className="fas fa-users me-2"></i>
+                                        Play Multiplayer
+                                    </ArticlesButton>
+                                </>
+                            }
+
+                            {prepareMultiplayer !== false &&
+                                <>
+
+                                    {/* <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
+                                        Generate room code
+                                    </div>
+    
                                     <input
                                         autoComplete='off'
                                         // id={item_key}
@@ -238,321 +360,226 @@ export default function DeathRaceLobbyPage() {
                                             setNickname(e.target.value)
                                         }}
                                     />
-                                </div>
-                                <ArticlesButton
-                                    className=""
-                                    onClick={() => {
-                                        setNickname(
-                                            nicknames[Math.floor(Math.random() * nicknames.length)]
-                                        )
-                                    }}
-                                >
-                                    <i className="fad fa-random me-0"></i>
-                                </ArticlesButton>
-                            </div>
+    
+                                    <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
+                                        Generate room code
+                                    </div> */}
 
-                            <div className='mt-1' style={{ fontSize: '0.8rem' }}>Visible to all players</div>
-
-                        </div>
-                    </div>
-
-                    <div className="card-body">
-
-                        {prepareMultiplayer == false &&
-                            <>
-                                <Link
-                                    href={{
-                                        pathname: `/play`,
-                                        // query: {
-                                        //     server: id
-                                        // }
-                                    }}
-                                >
-                                    <ArticlesButton className="w-100 mb-3">
-                                        Play Single Player
-                                    </ArticlesButton>
-                                </Link>
-
-
-                                <ArticlesButton
-                                    className="w-100 mb-1"
-                                    onClick={() => {
-                                        setPrepareMultiplayer({})
-                                    }}
-                                >
-                                    Play Multiplayer
-                                </ArticlesButton>
-                            </>
-                        }
-
-                        {prepareMultiplayer !== false &&
-                            <>
-
-                                {/* <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
-                                    Generate room code
-                                </div>
-
-                                <input
-                                    autoComplete='off'
-                                    // id={item_key}
-                                    type="text"
-                                    className='text-center w-100'
-                                    // autoFocus={autoFocus && true}
-                                    // onBlur={onBlur}
-                                    // placeholder={placeholder}
-                                    value={nickname}
-                                    // onKeyDown={onKeyDown}
-                                    onChange={(e) => {
-                                        setNickname(e.target.value)
-                                    }}
-                                />
-
-                                <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
-                                    Generate room code
-                                </div> */}
-
-                                {prepareMultiplayer.room_code == undefined &&
-                                    <div className='w-100 mb-0'>
-                                        <ArticlesButton
-                                            className="w-50"
-                                            onClick={() => {
-                                                const params = new URLSearchParams();
-                                                params.set("game_id", "loading");
-                                                router.push(`/play?${params.toString()}`);
-                                            }}
-                                        >
-                                            Start a Game
-                                        </ArticlesButton>
-
-                                        <ArticlesButton
-                                            className="w-50"
-                                            onClick={() => {
-                                                setPrepareMultiplayer({
-                                                    room_code: ''
-                                                })
-                                            }}
-                                        >
-                                            Join a Game
-                                        </ArticlesButton>
-                                    </div>
-                                }
-
-                                {prepareMultiplayer.room_code !== undefined &&
-                                    <div>
-
-                                        <div className="alert alert-danger py-1 mb-2">
-                                            Invalid room code
-                                        </div>
-
-                                        <input
-                                            value={prepareMultiplayer.room_code}
-                                            className='w-100'
-                                            placeholder='Room code'
-                                            onChange={(e) => {
-                                                setPrepareMultiplayer({
-                                                    ...prepareMultiplayer,
-                                                    room_code: e.target.value
-                                                })
-                                            }}
-                                        >
-                                        </input>
-
-                                    </div>
-
-                                }
-
-                                <div className="d-flex justify-content-center align-items-center w-100 mt-3">
-
-                                    <ArticlesButton
-                                        className=""
-                                        variant='link'
-                                        onClick={() => {
-                                            prepareMultiplayer.room_code !== undefined ?
-                                                setPrepareMultiplayer({})
-                                                :
-                                                setPrepareMultiplayer(false)
-                                        }}
-                                    >
-                                        <i className="fad fa-arrow-left me-2"></i>
-                                        Back
-                                    </ArticlesButton>
-
-                                    <span className="mx-2">|</span>
-
-                                    <ArticlesButton
-                                        className=""
-                                        variant='link'
-                                        disabled={
-                                            prepareMultiplayer.room_code?.length < 4
-                                            ||
-                                            !prepareMultiplayer.room_code
-                                        }
-                                        onClick={() => {
-                                            attemptConnection()
-                                        }}
-                                    >
-                                        Enter
-                                        <i className="fad fa-arrow-right ms-2"></i>
-                                    </ArticlesButton>
-
-                                </div>
-                            </>
-                        }
-
-                        <div className="fw-bold mb-1 small text-center d-none">
-                            {lobbyDetails.players.length || 0} player{lobbyDetails.players.length > 1 && 's'} in the lobby.
-                        </div>
-
-                        {/* <div className='small fw-bold'>Public Servers</div> */}
-
-                        <div className="servers d-none">
-
-                            {[1, 2, 3, 4].map(id => {
-
-                                let lobbyLookup = lobbyDetails?.fourFrogsGlobalState?.games?.find(lobby =>
-                                    parseInt(lobby.server_id) == id
-                                )
-
-                                return (
-                                    <div key={id} className="server">
-
-                                        <div className='d-flex justify-content-between align-items-center w-100 mb-2'>
-                                            <div className="mb-0" style={{ fontSize: '0.9rem' }}><b>Server {id}</b></div>
-                                            <div className='mb-0'>{lobbyLookup?.players?.length || 0}/2</div>
-                                        </div>
-
-                                        <div className='d-flex justify-content-start w-100 mb-1'>
-                                            {[1, 2].map(player_count => {
-
-                                                let playerLookup = false
-
-                                                if (lobbyLookup?.players?.length >= player_count) playerLookup = true
-
-                                                return (
-                                                    <div key={player_count} className="icon" style={{
-                                                        width: '20px',
-                                                        height: '20px',
-                                                        ...(playerLookup ? {
-                                                            backgroundColor: 'black',
-                                                        } : {
-                                                            backgroundColor: 'gray',
-                                                        }),
-                                                        border: '1px solid black'
-                                                    }}>
-
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-
-                                        <Link
-                                            className={``}
-                                            href={{
-                                                pathname: `/play`,
-                                                query: {
-                                                    server: id
-                                                }
-                                            }}
-                                        >
+                                    {prepareMultiplayer.room_code == undefined &&
+                                        <div className='w-100 mb-0'>
                                             <ArticlesButton
-                                                className="px-5"
-                                                small
+                                                className="w-50"
+                                                onClick={() => {
+                                                    const params = new URLSearchParams();
+                                                    params.set("game_id", "loading");
+                                                    router.push(`/play?${params.toString()}`);
+                                                }}
                                             >
-                                                Join
+                                                Start a Game
                                             </ArticlesButton>
-                                        </Link>
+
+                                            <ArticlesButton
+                                                className="w-50"
+                                                onClick={() => {
+                                                    setPrepareMultiplayer({
+                                                        room_code: ''
+                                                    })
+                                                }}
+                                            >
+                                                Join a Game
+                                            </ArticlesButton>
+                                        </div>
+                                    }
+
+                                    {prepareMultiplayer.room_code !== undefined &&
+                                        <div>
+
+                                            <div className="alert alert-danger py-1 mb-2">
+                                                Invalid room code
+                                            </div>
+
+                                            <input
+                                                value={prepareMultiplayer.room_code}
+                                                className='w-100'
+                                                placeholder='Room code'
+                                                onChange={(e) => {
+                                                    setPrepareMultiplayer({
+                                                        ...prepareMultiplayer,
+                                                        room_code: e.target.value
+                                                    })
+                                                }}
+                                            >
+                                            </input>
+
+                                        </div>
+
+                                    }
+
+                                    <div className="d-flex justify-content-center align-items-center w-100 mt-3">
+
+                                        <ArticlesButton
+                                            className=""
+                                            variant='link'
+                                            onClick={() => {
+                                                prepareMultiplayer.room_code !== undefined ?
+                                                    setPrepareMultiplayer({})
+                                                    :
+                                                    setPrepareMultiplayer(false)
+                                            }}
+                                        >
+                                            <i className="fad fa-arrow-left me-2"></i>
+                                            Back
+                                        </ArticlesButton>
+
+                                        <span className="mx-2">|</span>
+
+                                        <ArticlesButton
+                                            className=""
+                                            variant='link'
+                                            disabled={
+                                                prepareMultiplayer.room_code?.length < 4
+                                                ||
+                                                !prepareMultiplayer.room_code
+                                            }
+                                            onClick={() => {
+                                                attemptConnection()
+                                            }}
+                                        >
+                                            Enter
+                                            <i className="fad fa-arrow-right ms-2"></i>
+                                        </ArticlesButton>
 
                                     </div>
-                                )
-                            })}
+                                </>
+                            }
+
+                            <div className="fw-bold mb-1 small text-center d-none">
+                                {lobbyDetails.players.length || 0} player{lobbyDetails.players.length > 1 && 's'} in the lobby.
+                            </div>
+
+                            {/* <div className='small fw-bold'>Public Servers</div> */}
+
+                            <div className="servers d-none">
+
+                                {[1, 2, 3, 4].map(id => {
+
+                                    let lobbyLookup = lobbyDetails?.fourFrogsGlobalState?.games?.find(lobby =>
+                                        parseInt(lobby.server_id) == id
+                                    )
+
+                                    return (
+                                        <div key={id} className="server">
+
+                                            <div className='d-flex justify-content-between align-items-center w-100 mb-2'>
+                                                <div className="mb-0" style={{ fontSize: '0.9rem' }}><b>Server {id}</b></div>
+                                                <div className='mb-0'>{lobbyLookup?.players?.length || 0}/2</div>
+                                            </div>
+
+                                            <div className='d-flex justify-content-start w-100 mb-1'>
+                                                {[1, 2].map(player_count => {
+
+                                                    let playerLookup = false
+
+                                                    if (lobbyLookup?.players?.length >= player_count) playerLookup = true
+
+                                                    return (
+                                                        <div key={player_count} className="icon" style={{
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            ...(playerLookup ? {
+                                                                backgroundColor: 'black',
+                                                            } : {
+                                                                backgroundColor: 'gray',
+                                                            }),
+                                                            border: '1px solid black'
+                                                        }}>
+
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+
+                                            <Link
+                                                className={``}
+                                                href={{
+                                                    pathname: `/play`,
+                                                    query: {
+                                                        server: id
+                                                    }
+                                                }}
+                                            >
+                                                <ArticlesButton
+                                                    className="px-5"
+                                                    small
+                                                >
+                                                    Join
+                                                </ArticlesButton>
+                                            </Link>
+
+                                        </div>
+                                    )
+                                })}
+
+                            </div>
+
+                            {/* <div className='small fw-bold  mt-3 mb-1'>Or</div> */}
+
+                            {/* <div className='d-flex'>
+    
+                                <ArticlesButton
+                                    className={`w-50`}
+                                    onClick={() => {
+                                        // TODO
+                                        alert("Coming Soon!")
+                                    }}
+                                >
+                                    <i className="fad fa-robot"></i>
+                                    Practice
+                                </ArticlesButton>
+    
+                                <ArticlesButton
+                                    className={`w-50`}
+                                    onClick={() => {
+                                        setShowPrivateGameModal(prev => !prev)
+                                    }}
+                                >
+                                    <i className="fad fa-lock"></i>
+                                    Private Game
+                                </ArticlesButton>
+    
+                            </div> */}
+
+                            <IsDev className={'mt-3'}>
+                                <div>
+                                    <ArticlesButton
+                                        className="w-50"
+                                        variant='warning'
+                                        onClick={() => {
+                                            socket.emit('game:four-frogs:reset', '');
+                                        }}
+                                    >
+                                        Reset Server
+                                    </ArticlesButton>
+                                </div>
+                            </IsDev>
 
                         </div>
 
-                        {/* <div className='small fw-bold  mt-3 mb-1'>Or</div> */}
-
-                        {/* <div className='d-flex'>
+                        <div className="card-footer d-flex flex-wrap justify-content-center">
 
                             <ArticlesButton
                                 className={`w-50`}
-                                onClick={() => {
-                                    // TODO
-                                    alert("Coming Soon!")
-                                }}
-                            >
-                                <i className="fad fa-robot"></i>
-                                Practice
-                            </ArticlesButton>
-
-                            <ArticlesButton
-                                className={`w-50`}
-                                onClick={() => {
-                                    setShowPrivateGameModal(prev => !prev)
-                                }}
-                            >
-                                <i className="fad fa-lock"></i>
-                                Private Game
-                            </ArticlesButton>
-
-                        </div> */}
-
-                        <IsDev className={'mt-3'}>
-                            <div>
-                                <ArticlesButton
-                                    className="w-50"
-                                    variant='warning'
-                                    onClick={() => {
-                                        socket.emit('game:four-frogs:reset', '');
-                                    }}
-                                >
-                                    Reset Server
-                                </ArticlesButton>
-                            </div>
-                        </IsDev>
-
-                    </div>
-
-                    <div className="card-footer d-flex flex-wrap justify-content-center">
-
-                        <ArticlesButton
-                            className={`w-50`}
-                            small
-                            onClick={() => {
-                                setShowSettingsModal(prev => !prev)
-                            }}
-                        >
-                            <i className="fad fa-cog"></i>
-                            Settings
-                        </ArticlesButton>
-
-                        <ArticlesButton
-                            className={`w-50`}
-                            small
-                            onClick={() => {
-                                setShowInfoModal({
-                                    game: game_name
-                                })
-                            }}
-                        >
-                            <i className="fad fa-info-square"></i>
-                            Rules & Controls
-                        </ArticlesButton>
-
-                        {/* <Link href={ROUTES.GAMES} className='w-50'>
-                            <ArticlesButton
-                                className={`w-100`}
                                 small
                                 onClick={() => {
-
+                                    setShowSettingsModal(prev => !prev)
                                 }}
                             >
-                                <i className="fad fa-sign-out fa-rotate-180"></i>
-                                Leave Game
+                                <i className="fad fa-cog"></i>
+                                Settings
                             </ArticlesButton>
-                        </Link> */}
 
-                        <a href="https://github.com/Articles-Joey/8-ball-pool" className='w-50' target="_blank" rel="noopener noreferrer">
                             <ArticlesButton
-                                className={`w-100`}
+                                className={`w-50`}
                                 small
                                 onClick={() => {
                                     setShowInfoModal({
@@ -560,27 +587,67 @@ export default function DeathRaceLobbyPage() {
                                     })
                                 }}
                             >
-                                <i className="fab fa-github"></i>
-                                Github
+                                <i className="fad fa-info-square"></i>
+                                Rules & Controls
                             </ArticlesButton>
-                        </a>
 
-                        <ArticlesButton
-                            className={`w-50`}
-                            small
-                            onClick={() => {
-                                setShowInfoModal({
-                                    game: game_name
-                                })
-                            }}
-                        >
-                            <i className="fad fa-users"></i>
-                            Credits
-                        </ArticlesButton>
+                            {/* <Link href={ROUTES.GAMES} className='w-50'>
+                                <ArticlesButton
+                                    className={`w-100`}
+                                    small
+                                    onClick={() => {
+    
+                                    }}
+                                >
+                                    <i className="fad fa-sign-out fa-rotate-180"></i>
+                                    Leave Game
+                                </ArticlesButton>
+                            </Link> */}
+
+                            <a href="https://github.com/Articles-Joey/8-ball-pool" className='w-50' target="_blank" rel="noopener noreferrer">
+                                <ArticlesButton
+                                    className={`w-100`}
+                                    small
+                                    onClick={() => {
+                                        setShowInfoModal({
+                                            game: game_name
+                                        })
+                                    }}
+                                >
+                                    <i className="fab fa-github"></i>
+                                    Github
+                                </ArticlesButton>
+                            </a>
+
+                            <ArticlesButton
+                                className={`w-50`}
+                                small
+                                onClick={() => {
+                                    setShowInfoModal({
+                                        game: game_name
+                                    })
+                                }}
+                            >
+                                <i className="fad fa-users"></i>
+                                Credits
+                            </ArticlesButton>
+
+                        </div>
 
                     </div>
 
+                    <ReturnToLauncherButton />
                 </div>
+
+                <Ad
+                    style="Default"
+                    section={"Games"}
+                    section_id={game_name}
+                    darkMode={darkMode ? true : false}
+                    user_ad_token={userToken}
+                    userDetails={userDetails}
+                    userDetailsLoading={userDetailsLoading}
+                />
 
                 {/* <GameScoreboard game="Death Race" /> */}
 

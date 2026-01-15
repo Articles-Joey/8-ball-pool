@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Modal, Form } from "react-bootstrap"
 
 import ArticlesButton from "@/components/UI/Button";
+import { useEightBallStore } from "@/hooks/useEightBallStore";
 
 export default function FourFrogsSettingsModal({
     show,
@@ -13,7 +14,13 @@ export default function FourFrogsSettingsModal({
 
     const [lightboxData, setLightboxData] = useState(null)
 
-    const [tab, setTab] = useState('Controls')
+    const [tab, setTab] = useState('Visuals')
+
+    const darkMode = useEightBallStore((state) => state.darkMode)
+    const toggleDarkMode = useEightBallStore((state) => state.toggleDarkMode)
+
+    const graphicsQuality = useEightBallStore((state) => state.graphicsQuality)
+    const setGraphicsQuality = useEightBallStore((state) => state.setGraphicsQuality)
 
     return (
         <>
@@ -52,6 +59,7 @@ export default function FourFrogsSettingsModal({
 
                     <div className='p-2'>
                         {[
+                            'Visuals',
                             'Controls',
                             'Audio',
                             'Chat'
@@ -69,6 +77,53 @@ export default function FourFrogsSettingsModal({
                     <hr className="my-0" />
 
                     <div className="p-2">
+
+                        {tab == 'Visuals' &&
+                            <>
+                                <div className="mb-3">
+                                    <div className="d-flex align-items-center">
+                                        <Form.Check
+                                            // ref={el => elementsRef.current[4] = el}
+                                            type="switch"
+                                            id="dark-mode-switch"
+                                            label="Dark Mode"
+                                            // value={enabled}
+                                            checked={darkMode}
+                                            onChange={() => {
+                                                toggleDarkMode();
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="small mt-2">
+                                        {`Dark Mode changes the game's color scheme to be easier on the eyes in low light environments.`}
+                                    </div>
+                                </div>
+
+                                <hr />
+
+                                <div>
+                                    <div className="mb-2">Quality</div>
+                                    {[
+                                        'Low',
+                                        'Medium',
+                                        'High',
+                                    ].map((option, i) =>
+                                        <ArticlesButton
+                                            // ref={el => elementsRef.current[5 + i] = el}
+                                            key={option}
+                                            className=""
+                                            active={graphicsQuality === option}
+                                            onClick={() => setGraphicsQuality(option)}
+                                        >
+                                            {option}
+                                        </ArticlesButton>
+                                    )
+                                    }
+                                </div>
+
+                            </>
+                        }
+
                         {tab == 'Controls' &&
                             <div>
                                 {[

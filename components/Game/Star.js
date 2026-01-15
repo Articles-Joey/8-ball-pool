@@ -14,7 +14,8 @@ export function Star(props) {
     const { nodes, materials } = useGLTF(link);
     const starRef = useRef();
 
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useEightBallStore(state => state.darkMode);
 
     // Rotation animation
     useFrame(() => {
@@ -46,7 +47,7 @@ export function Star(props) {
                 emissiveIntensity={10} // adjust for subtle glow
             />
 
-            {theme == "Dark" &&
+            {darkMode &&
                 <pointLight
                     position={[0.6, 1, 0.6]}
                     intensity={2000}

@@ -1,4 +1,5 @@
 "use client"
+// import { dark } from '@mui/material/styles/createPalette'
 import { persist } from 'zustand/middleware'
 // import { create } from 'zustand'
 import { createWithEqualityFn as create } from 'zustand/traditional'
@@ -150,7 +151,26 @@ export const useEightBallStore = create(persist((set) => ({
         set((prev) => ({
             theme: newValue
         }))
-    }
+    },
+
+    darkMode: false,
+    setDarkMode: (newValue) => {
+        set((prev) => ({
+            darkMode: newValue
+        }))
+    },
+    toggleDarkMode: () => {
+        set((prev) => ({
+            darkMode: !prev.darkMode
+        }))
+    },
+
+    graphicsQuality: 'High',
+    setGraphicsQuality: (newValue) => {
+        set((prev) => ({
+            graphicsQuality: newValue
+        }))
+    },
 
 }), {
     name: 'eight-ball-settings',
@@ -162,6 +182,8 @@ export const useEightBallStore = create(persist((set) => ({
         // cueRotation: state.cueRotation,
         // cuePower: state.cuePower,
         showSidebar: state.showSidebar,
-        theme: state.theme
+        theme: state.theme,
+        darkMode: state.darkMode,
+        graphicsQuality: state.graphicsQuality,
     })
 }))

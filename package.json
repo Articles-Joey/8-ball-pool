@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@articles-media/articles-dev-box": "^1.0.10",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
@@ -23,12 +24,12 @@
     "bootstrap": "^5.3.7",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
-    "next": "^16",
+    "next": "^16.1.1",
     "peerjs": "^1.5.5",
-    "react": "^19",
+    "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-countdown": "^2.3.6",
-    "react-dom": "^19",
+    "react-dom": "^19.2.3",
     "react-hotkeys-hook": "^5.1.0",
     "sass": "^1.94.2",
     "socket.io-client": "^4.8.1",
@@ -39,6 +40,6 @@
     "@eslint/eslintrc": "^3",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16"
+    "eslint-config-next": "16.1.1"
   }
 }

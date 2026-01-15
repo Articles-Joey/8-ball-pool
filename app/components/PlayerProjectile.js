@@ -42,7 +42,8 @@ export default function PlayerProjectile() {
     const cuePower = useEightBallStore(state => state.cuePower);
     const nudge = useEightBallStore(state => state.nudge);
     const setNudge = useEightBallStore(state => state.setNudge);
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useEightBallStore(state => state.darkMode);
 
     // const nudgeBall = () => {
     //     // Apply impulse or force to the ball
@@ -171,7 +172,7 @@ export default function PlayerProjectile() {
             {/* Aiming tools */}
             <group ref={toolsRef} rotation={[0, degToRad(cueRotation), 0]}>
 
-                {theme == "Dark" &&
+                {darkMode &&
                     <pointLight
                         position={[0, 0, 0]}
                         intensity={100}

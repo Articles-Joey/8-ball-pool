@@ -227,7 +227,9 @@ function Ball({
     // setBallPositions 
 }) {
 
-    const theme = useEightBallStore(state => state.theme);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useEightBallStore(state => state.darkMode);
+
     const ballPositions = useEightBallStore(state => state.ballPositions);
     const setBallPosition = useEightBallStore(state => state.setBallPosition);
 
@@ -315,7 +317,7 @@ function Ball({
                     emissiveIntensity={0.02} // adjust for subtle glow
                 />
 
-                {theme == "Dark" && (
+                {darkMode && (
                     <pointLight
                         position={[0, 0, 0]}
                         intensity={getBallDetails(ball).emissiveLightIntensity}
