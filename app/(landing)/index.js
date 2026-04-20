@@ -108,26 +108,23 @@ export default function LandingPage() {
 
     const darkMode = useStore(state => state.darkMode)
 
-    const [nickname, setNickname] = useLocalStorageNew("game:nickname", '')
+    const nickname = useStore(state => state.nickname)
+    const setNickname = useStore(state => state.setNickname)
+    const randomNickname = useStore(state => state.randomNickname)
 
     const [prepareMultiplayer, setPrepareMultiplayer] = useState(false)
 
-    const [showInfoModal, setShowInfoModal] = useState(false)
-    const [showSettingsModal, setShowSettingsModal] = useState(false)
-    const [showPrivateGameModal, setShowPrivateGameModal] = useState(false)
+    const _hasHydrated = useStore(state => state._hasHydrated)
+    const toggleDarkMode = useStore(state => state.toggleDarkMode);
+    
+    const setShowInfoModal = useStore(state => state.setShowInfoModal);
+    const setShowSettingsModal = useStore(state => state.setShowSettingsModal);
+    const setShowCreditsModal = useStore(state => state.setShowCreditsModal);
 
-    const [lobbyDetails, setLobbyDetails] = useState({
-        players: [],
-        games: [],
-    })
+    const lobbyDetails = useStore(state => state.lobbyDetails);
+    const setLobbyDetails = useStore(state => state.setLobbyDetails);
 
     useEffect(() => {
-
-        setShowInfoModal(localStorage.getItem('game:four-frogs:rulesAnControls') === 'true' ? true : false)
-
-        // if (userReduxState._id) {
-        //     console.log("Is user")
-        // }
 
         socket.on('game:8-ball-pool-landing-details', function (msg) {
             console.log('game:8-ball-pool-landing-details', msg)
@@ -142,47 +139,6 @@ export default function LandingPage() {
         };
 
     }, [])
-
-    useEffect(() => {
-
-        localStorage.setItem('game:8-ball-pool:rulesAnControls', showInfoModal)
-
-    }, [showInfoModal])
-
-    const nicknames = [
-        "Cue Master",
-        "Eight Ball Eddie",
-        "Rack Attack",
-        "Pocket Rocket",
-        "Spin Doctor",
-        "Bank Shot Bob",
-        "Break Queen",
-        "Chalk Zilla",
-        "Scratch Cat",
-        "Side Pocket Sam",
-        "Magic Cue",
-        "Green Felt Greg",
-        "Corner King",
-        "Pool Shark",
-        "Lucky Break",
-        "Fast Fingers",
-        "The Hustler",
-        "Snooker Snoop",
-        "Ball Buster",
-        "Table Titan"
-    ]
-
-    const setOnceRef = useRef(false);
-    useEffect(() => {
-
-        if (!nickname && !setOnceRef.current) {
-            setOnceRef.current = true;
-            setNickname(
-                nicknames[Math.floor(Math.random() * nicknames.length)]
-            )
-        }
-
-    }, [nickname])
 
     useEffect(() => {
 
@@ -210,27 +166,6 @@ export default function LandingPage() {
 
         <div className="amcot-pool-landing-page">
 
-            {showInfoModal &&
-                <InfoModal
-                    show={showInfoModal}
-                    setShow={setShowInfoModal}
-                />
-            }
-
-            {showSettingsModal &&
-                <SettingsModal
-                    show={showSettingsModal}
-                    setShow={setShowSettingsModal}
-                />
-            }
-
-            {/* {showPrivateGameModal &&
-                <PrivateGameModal
-                    show={showPrivateGameModal}
-                    setShow={setShowPrivateGameModal}
-                />
-            } */}
-
             <div className='background-wrap'>
                 <Image
                     src={`${process.env.NEXT_PUBLIC_CDN}games/8 Ball Pool/8-ball-pool-lobby-background.jpg`}
@@ -245,6 +180,7 @@ export default function LandingPage() {
                 <div
                     style={{ "width": "20rem" }}
                 >
+
                     <div
                         className="card card-articles card-sm mb-2"
                     >
@@ -281,7 +217,8 @@ export default function LandingPage() {
                                             // autoFocus={autoFocus && true}
                                             // onBlur={onBlur}
                                             // placeholder={placeholder}
-                                            value={nickname}
+                                            disabled={!_hasHydrated}
+                                            value={_hasHydrated ? nickname : ''}
                                             // onKeyDown={onKeyDown}
                                             onChange={(e) => {
                                                 setNickname(e.target.value)
@@ -294,9 +231,7 @@ export default function LandingPage() {
                                     <ArticlesButton
                                         className=""
                                         onClick={() => {
-                                            setNickname(
-                                                nicknames[Math.floor(Math.random() * nicknames.length)]
-                                            )
+                                            randomNickname()
                                         }}
                                     >
                                         <i className="fad fa-random me-0"></i>
@@ -567,16 +502,27 @@ export default function LandingPage() {
 
                         <div className="card-footer d-flex flex-wrap justify-content-center">
 
-                            <ArticlesButton
-                                className={`w-50`}
-                                small
-                                onClick={() => {
-                                    setShowSettingsModal(prev => !prev)
-                                }}
-                            >
-                                <i className="fad fa-cog"></i>
-                                Settings
-                            </ArticlesButton>
+                            <div className='d-flex w-50'>
+                                <ArticlesButton
+                                    className={`w-100`}
+                                    small
+                                    onClick={() => {
+                                        setShowSettingsModal(true)
+                                    }}
+                                >
+                                    <i className="fad fa-cog"></i>
+                                    Settings
+                                </ArticlesButton>
+                                <ArticlesButton
+                                    className={``}
+                                    small
+                                    onClick={() => {
+                                        toggleDarkMode();
+                                    }}
+                                >
+                                    <i className="fad fa-palette"></i>
+                                </ArticlesButton>
+                            </div>
 
                             <ArticlesButton
                                 className={`w-50`}
@@ -608,11 +554,6 @@ export default function LandingPage() {
                                 <ArticlesButton
                                     className={`w-100`}
                                     small
-                                    onClick={() => {
-                                        setShowInfoModal({
-                                            game: game_name
-                                        })
-                                    }}
                                 >
                                     <i className="fab fa-github"></i>
                                     Github
@@ -623,9 +564,7 @@ export default function LandingPage() {
                                 className={`w-50`}
                                 small
                                 onClick={() => {
-                                    setShowInfoModal({
-                                        game: game_name
-                                    })
+                                    setShowCreditsModal(true)
                                 }}
                             >
                                 <i className="fad fa-users"></i>

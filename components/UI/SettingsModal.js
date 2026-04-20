@@ -4,6 +4,7 @@ import { Modal, Form } from "react-bootstrap"
 
 import ArticlesButton from "@/components/UI/Button";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
 
 export default function FourFrogsSettingsModal({
     show,
@@ -16,8 +17,8 @@ export default function FourFrogsSettingsModal({
 
     const [tab, setTab] = useState('Visuals')
 
-    const darkMode = useEightBallStore((state) => state.darkMode)
-    const toggleDarkMode = useEightBallStore((state) => state.toggleDarkMode)
+    const darkMode = useStore(state => state.darkMode);
+    const toggleDarkMode = useStore((state) => state.toggleDarkMode)
 
     const graphicsQuality = useEightBallStore((state) => state.graphicsQuality)
     const setGraphicsQuality = useEightBallStore((state) => state.setGraphicsQuality)

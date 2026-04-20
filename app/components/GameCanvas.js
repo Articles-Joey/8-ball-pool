@@ -39,11 +39,12 @@ import FlickerFireLight from "@/components/Game/FlickerFireLight";
 import CameraControls from "@/components/Game/CameraControls";
 import RoomWalls from "@/components/Game/RoomWalls";
 import { degToRad } from "three/src/math/MathUtils";
+import { useStore } from "@/hooks/useStore";
 
 function GameCanvas(props) {
 
     // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useEightBallStore(state => state.darkMode);
+    const darkMode = useStore(state => state.darkMode);
 
     // const GPUTier = useDetectGPU()
 

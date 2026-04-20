@@ -1,11 +1,11 @@
 import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
 import { Image } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils";
 
 export default function Dartboard() {
 
-    // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useEightBallStore(state => state.darkMode);
+    const darkMode = useStore(state => state.darkMode);
 
     return (
         <group position={[-80, 20, 150]}>

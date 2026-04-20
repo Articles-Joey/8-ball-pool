@@ -15,6 +15,7 @@ import { Dropdown, DropdownButton } from "react-bootstrap";
 // import Peer from 'peerjs';
 import PeerLogic from "./PeerLogic";
 import { useSearchParams } from "next/navigation";
+import { useStore } from "@/hooks/useStore";
 
 export default function LeftPanelContent(props) {
 
@@ -54,8 +55,8 @@ export default function LeftPanelContent(props) {
     const resetPeer = useEightBallStore(state => state.resetPeer);
     const setResetPeer = useEightBallStore(state => state.setResetPeer);
 
-    const darkMode = useEightBallStore(state => state.darkMode);
-    const setDarkMode = useEightBallStore(state => state.setDarkMode);
+    const darkMode = useStore(state => state.darkMode);
+    const setDarkMode = useStore(state => state.setDarkMode);
     // const theme = useEightBallStore(state => state.theme);
     // const setTheme = useEightBallStore(state => state.setTheme);
 
@@ -267,58 +268,78 @@ export default function LeftPanelContent(props) {
                         </div>
                     } */}
 
-                    <Link
-                        href={'/'}
-                        className=""
-                    >
-                        <ArticlesButton
-                            className='w-50'
-                            small
+                    <div className="d-flex flex-wrap">
+
+                        <Link
+                            href={'/'}
+                            className="w-50"
                         >
-                            <i className="fad fa-arrow-alt-square-left"></i>
-                            <span>Leave Game</span>
+                            <ArticlesButton
+                                className='w-100'
+                                small
+                            >
+                                <i className="fad fa-arrow-alt-square-left"></i>
+                                <span>Leave Game</span>
+                            </ArticlesButton>
+                        </Link>
+
+                        <ArticlesButton
+                            small
+                            className="w-50"
+                            active={isFullscreen}
+                            onClick={() => {
+                                if (isFullscreen) {
+                                    exitFullscreen()
+                                } else {
+                                    requestFullscreen('amcot-pool-game-page')
+                                }
+                            }}
+                        >
+                            {isFullscreen && <span>Exit </span>}
+                            {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
+                            <span>Fullscreen</span>
                         </ArticlesButton>
-                    </Link>
 
-                    <ArticlesButton
-                        small
-                        className="w-50"
-                        active={isFullscreen}
-                        onClick={() => {
-                            if (isFullscreen) {
-                                exitFullscreen()
-                            } else {
-                                requestFullscreen('amcot-pool-game-page')
-                            }
-                        }}
-                    >
-                        {isFullscreen && <span>Exit </span>}
-                        {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
-                        <span>Fullscreen</span>
-                    </ArticlesButton>
+                        <div className='d-flex w-50'>
+                            <ArticlesButton
+                                className='w-100'
+                                small
+                                onClick={() => {
+                                    setShowSettingsModal(true);
+                                }}
+                            >
+                                <i className="fad fa-cog"></i>
+                                Settings
+                            </ArticlesButton>
+                            <ArticlesButton
+                                className=''
+                                small
+                                onClick={() => {
+                                    setDarkMode(!darkMode);
+                                }}
+                            >
+                                {darkMode ?
+                                    <i className="fad fa-sun"></i>
+                                    :
+                                    <i className="fad fa-moon"></i>
+                                }
+                                {/* <span>Theme: {darkMode ? 'Dark' : 'Light'}</span> */}
+                            </ArticlesButton>
+                        </div>
 
-                    <ArticlesButton
-                        className='w-50'
-                        small
-                        onClick={() => {
-                            setDarkMode(!darkMode);
-                        }}
-                    >
-                        <i className="fad fa-arrow-alt-square-left"></i>
-                        <span>Theme: {darkMode ? 'Dark' : 'Light'}</span>
-                    </ArticlesButton>
+                        <ArticlesButton
+                            small
+                            active={showSidebar}
+                            className='w-50'
+                            onClick={() => {
+                                setShowSidebar(!showSidebar)
+                            }}
+                        >
+                            <i className="fas fa-bars" style={{ transform: 'rotate(90deg)' }}></i>
+                            <span>Sidebar</span>
+                        </ArticlesButton>
 
-                    <ArticlesButton
-                        small
-                        active={showSidebar}
-                        className='w-50'
-                        onClick={() => {
-                            setShowSidebar(!showSidebar)
-                        }}
-                    >
-                        <i className="fas fa-bars" style={{ transform: 'rotate(90deg)' }}></i>
-                        <span>Sidebar</span>
-                    </ArticlesButton>
+                    </div>
 
                 </div>
             </div>

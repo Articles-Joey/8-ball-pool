@@ -25,10 +25,13 @@ export function Model(props) {
 
   useEffect(() => {
     const action = actions[`Roll`];
+    if (!action) return;
+
     action.play();
     action.paused = true;
     action.time = timeRef.current;
 
+    let frameId;
     function animate() {
       // Animate between 0.8 and 1
       timeRef.current += directionRef.current * 0.0001; // Adjust speed as needed
@@ -40,11 +43,12 @@ export function Model(props) {
         directionRef.current = 1;
       }
       action.time = timeRef.current;
-      animFrameRef.current = requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     }
-    animFrameRef.current = requestAnimationFrame(animate);
+    frameId = requestAnimationFrame(animate);
     return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      cancelAnimationFrame(frameId);
+      action.stop();
     };
   }, [actions]);
   

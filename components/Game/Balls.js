@@ -1,4 +1,5 @@
 import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
 import { useSphere } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
@@ -228,7 +229,7 @@ function Ball({
 }) {
 
     // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useEightBallStore(state => state.darkMode);
+    const darkMode = useStore(state => state.darkMode);
 
     const ballPositions = useEightBallStore(state => state.ballPositions);
     const setBallPosition = useEightBallStore(state => state.setBallPosition);

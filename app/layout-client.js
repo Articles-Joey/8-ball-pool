@@ -1,30 +1,16 @@
 "use client"
-// import { useEffect } from "react";
-// import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from '@/hooks/useStore';
+import { DarkModeHandler } from '@articles-media/articles-dev-box';
 import GlobalBody from '@articles-media/articles-dev-box/GlobalBody';
 
 export default function LayoutClient({ children }) {
 
-    // const theme = useEightBallStore(state => state.theme);
-
-    // useEffect(() => {
-
-    //     if (theme == null) {
-    //         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    //         useEightBallStore.getState().setTheme(prefersDark ? "Dark" : "Light");
-    //     }
-
-    //     if (theme == "Dark") {
-    //         document.body.setAttribute("data-bs-theme", 'dark');
-    //     } else {
-    //         document.body.setAttribute("data-bs-theme", 'light');
-    //     }
-
-    // }, [theme]);
-
     return (
         <>
             <GlobalBody />
+            <DarkModeHandler
+                useStore={useStore}
+            />
         </>
     );
 }

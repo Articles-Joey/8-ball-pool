@@ -12,10 +12,13 @@ import "@/styles/index.scss";
 
 import "@articles-media/articles-dev-box/dist/style.css";
 
+import "@articles-media/articles-gamepad-helper/dist/articles-gamepad-helper.css";
+
 import SocketLogicHandler from "@/components/SocketLogicHandler";
 import LayoutClient from './layout-client';
 import { Suspense } from 'react';
-import DarkModeHandler from '@/components/UI/DarkModeHandler';
+// import DarkModeHandler from '@/components/UI/DarkModeHandler';
+import GlobalClientModals from '@/components/UI/GlobalClientModals';
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -49,10 +52,12 @@ export default function RootLayout({ children }) {
       // className={`${geistSans.variable} ${geistMono.variable}`}
       >
 
+        {/* <DarkModeHandler /> */}
+        <SocketLogicHandler />
+        <LayoutClient />
+
         <Suspense>
-          <LayoutClient />
-          <DarkModeHandler />
-          <SocketLogicHandler />
+          <GlobalClientModals />
         </Suspense>
 
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>

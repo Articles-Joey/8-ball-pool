@@ -21,12 +21,12 @@ export function Model(props) {
   const { previewConfig } = props
   
   useEffect(() => {
-
-    console.log("Actions", actions)
-
-    actions[`Idle`].play();
-
-}, [actions]);
+    const action = actions[`Idle`];
+    if (action) {
+      action.reset().fadeIn(0.5).play();
+      return () => action.fadeOut(0.5);
+    }
+  }, [actions]);
   return (
     <group ref={group} {...props} dispose={null}>
       <group name="Scene">

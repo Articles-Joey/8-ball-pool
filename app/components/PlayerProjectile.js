@@ -6,6 +6,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { MathUtils } from "three";
 import { useFrame } from "@react-three/fiber";
 import { Image } from "@react-three/drei";
+import { useStore } from "@/hooks/useStore";
 
 export default function PlayerProjectile() {
 
@@ -43,7 +44,7 @@ export default function PlayerProjectile() {
     const nudge = useEightBallStore(state => state.nudge);
     const setNudge = useEightBallStore(state => state.setNudge);
     // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useEightBallStore(state => state.darkMode);
+    const darkMode = useStore(state => state.darkMode);
 
     // const nudgeBall = () => {
     //     // Apply impulse or force to the ball

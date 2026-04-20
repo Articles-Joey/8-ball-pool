@@ -6,6 +6,7 @@ import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
 
 const link = `${process.env.NEXT_PUBLIC_CDN}games/Race Game/star.gltf`
 
@@ -14,8 +15,7 @@ export function Star(props) {
     const { nodes, materials } = useGLTF(link);
     const starRef = useRef();
 
-    // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useEightBallStore(state => state.darkMode);
+    const darkMode = useStore(state => state.darkMode);
 
     // Rotation animation
     useFrame(() => {

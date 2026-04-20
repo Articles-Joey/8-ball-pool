@@ -1,16 +1,23 @@
 "use client"
-import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
 import { useEffect } from "react";
+
+// import { useEightBallStore } from "@/hooks/useEightBallStore";
+// import { useStore } from "../hooks/useStore";
 
 export default function DarkModeHandler({ children }) {
 
-    const darkMode = useEightBallStore(state => state.darkMode);
+    // const theme = useEightBallStore(state => state.theme);
+    const darkMode = useStore((state) => state.darkMode);
+    const hasHydrated = useStore((state) => state._hasHydrated);
 
     useEffect(() => {
 
+        if (!hasHydrated) return;
+
         if (darkMode == null) {
             const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            useEightBallStore.getState().setDarkMode(prefersDark ? true : false);
+            useStore.getState().setDarkMode(prefersDark ? true : false);
         }
 
         if (darkMode) {
@@ -19,7 +26,7 @@ export default function DarkModeHandler({ children }) {
             document.body.setAttribute("data-bs-theme", 'light');
         }
 
-    }, [darkMode]);
+    }, [darkMode, hasHydrated]);
 
     return (
         <>
