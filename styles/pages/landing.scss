@@ -1,6 +1,16 @@
 @use "@/styles/components/global.scss" as *;
 
-.amcot-pool-landing-page {
+[data-bs-theme="dark"] {
+    .landing-page {
+        .background-wrap {
+            img {
+                filter: blur(5px) brightness(0.5) !important;
+            }
+        }
+    }
+}
+
+.landing-page {
     flex-grow: 1;
     display: flex;
     justify-content: center;
@@ -42,6 +52,7 @@
         top: 0;
         width: 100%;
         height: 100%;
+        z-index: -1;
 
         img {
             // backdrop-filter: blur(8px);

@@ -1,22 +1,22 @@
 @use "@/styles/components/global.scss" as *;
 
-.amcot-pool-game-page {
+.game-page {
     position: relative;
     display: flex;
 
     &.fullscreen {
-        .mobile-menu {
-            top: 0px;
-        }
+        // .mobile-menu {
+        //     top: 0px;
+        // }
     }
 
     &.sidebar {
 
-        .panel-left {
-            @include media-breakpoint-up(lg) {
-                display: flex;
-            }
-        }
+        // .panel-left {
+        //     @include media-breakpoint-up(lg) {
+        //         display: flex;
+        //     }
+        // }
 
         .floating-button {
 
@@ -99,136 +99,124 @@
         }
     }
 
-    .menu-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 50px;
-        z-index: 3;
+    .floating-controls {
+        // position: fixed;
+        // bottom: 50px;
+        // left: 50%;
+        // transform: translate(0%, -50%);
+        // display: flex;
+        // flex-direction: column;
+        // align-items: center;
+        // justify-content: center;
 
-        // @include media-breakpoint-up(lg) {
-        //     display: none;
-        // }
+        .rotation {
+            margin: 1rem;
+            bottom: 50px;
+            position: fixed;
+            left: calc(50%);
+            transform: translate(-50%, 0);
+            display: flex;
+            justify-content: center;
 
-        .floating-controls {
+            // @include media-breakpoint-up(lg) {
+            //     left: calc(50% + 150px);
+            // }
+        }
+
+        .floating-button {
+            background-color: white;
+            color: black;
+            width: 50px;
+            height: 50px;
+            border-radius: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
             // position: fixed;
             // bottom: 50px;
             // left: 50%;
             // transform: translate(0%, -50%);
-            // display: flex;
-            // flex-direction: column;
-            // align-items: center;
-            // justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition-duration: 200ms;
 
-            .rotation {
+            &:hover {
+                opacity: 1;
+                cursor: pointer;
+                scale: 1.1;
+            }
+
+            &.launch {
                 margin: 1rem;
                 bottom: 50px;
                 position: fixed;
-                left: calc(50%);
-                transform: translate(-50%, 0);
-                display: flex;
-                justify-content: center;
-
-                // @include media-breakpoint-up(lg) {
-                //     left: calc(50% + 150px);
-                // }
-            }
-
-            .floating-button {
-                background-color: white;
-                color: black;
-                width: 50px;
-                height: 50px;
-                border-radius: 50px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-
-                // position: fixed;
-                // bottom: 50px;
-                // left: 50%;
+                left: initial;
+                right: 0;
+                width: 75px;
+                height: 75px;
+                // transform: initial;
                 // transform: translate(0%, -50%);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                opacity: 0.8;
-                transition-duration: 200ms;
-
-                &:hover {
-                    opacity: 1;
-                    cursor: pointer;
-                    scale: 1.1;
-                }
-
-                &.launch {
-                    margin: 1rem;
-                    bottom: 50px;
-                    position: fixed;
-                    left: initial;
-                    right: 0;
-                    width: 75px;
-                    height: 75px;
-                    // transform: initial;
-                    // transform: translate(0%, -50%);
-                }
-
-                &.increase-power {
-                    margin: 1rem;
-                    bottom: 110px;
-                    position: fixed;
-                    left: 0;
-                    // right: 0;
-                }
-
-                &.decrease-power {
-                    margin: 1rem;
-                    bottom: 50px;
-                    position: fixed;
-                    left: 0;
-                    // right: 0;
-                }
-
             }
+
+            &.increase-power {
+                margin: 1rem;
+                bottom: 110px;
+                position: fixed;
+                left: 0;
+                // right: 0;
+            }
+
+            &.decrease-power {
+                margin: 1rem;
+                bottom: 50px;
+                position: fixed;
+                left: 0;
+                // right: 0;
+            }
+
         }
     }
 
-    .mobile-menu {
-        position: fixed;
-        bottom: 50px;
-        left: 0;
-        width: 100%;
-        top: 0px;
-        // height: calc(100vh - 50px);
-        z-index: 2;
-        background-color: rgba(0, 0, 0, 0.75);
-        transform: translateY(calc(100% + 50px));
-        transition-duration: 200ms;
-        padding: 1rem;
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
+    // .mobile-menu {
+    //     position: fixed;
+    //     bottom: 50px;
+    //     left: 0;
+    //     width: 100%;
+    //     top: 0px;
+    //     // height: calc(100vh - 50px);
+    //     z-index: 2;
+    //     background-color: rgba(0, 0, 0, 0.75);
+    //     transform: translateY(calc(100% + 50px));
+    //     transition-duration: 200ms;
+    //     padding: 1rem;
+    //     display: flex;
+    //     justify-content: center;
+    //     align-items: flex-end;
 
-        &.show {
-            transform: translateY(0);
-        }
+    //     &.show {
+    //         transform: translateY(0);
+    //     }
 
-        .card {
-            max-width: 300px;
-            margin: 0 auto;
-        }
+    //     .card {
+    //         max-width: 300px;
+    //         margin: 0 auto;
+    //     }
 
-    }
+    // }
 
     .touch-controls-area {
-        position: fixed;
+        position: absolute;
         bottom: 50px;
-        left: 0;
-        width: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        // width: 100%;
         height: 150px;
-        z-index: 1;
+        z-index: 2;
         background-color: rgba(0, 0, 0, 0.5);
 
         padding: 1rem 1rem;
@@ -268,7 +256,7 @@
         // max-width: 500px;
         // max-height: 800px;
         width: 100vw;
-        height: calc(100vh - 50px);
+        height: calc(100vh - 0px);
 
         canvas {
             position: absolute;
@@ -289,19 +277,19 @@
         // padding: 1rem;
     }
 
-    .panel-left,
-    .panel-right {
-        display: none;
-        width: 300px;
-        height: calc(100vh - 50px);
-        flex-shrink: 0;
-    }
+    // .panel-left,
+    // .panel-right {
+    //     display: none;
+    //     width: 300px;
+    //     height: calc(100vh - 50px);
+    //     flex-shrink: 0;
+    // }
 
-    .panel-right {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    // .panel-right {
+    //     display: flex;
+    //     justify-content: center;
+    //     align-items: center;
+    // }
 
     .game-panel {
         width: 100%;

@@ -10,51 +10,28 @@ import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
-// import { useSelector, useDispatch } from 'react-redux'
-
-// import ROUTES from 'components/constants/routes'
+import { useStore } from '@/hooks/useStore';
 
 import ArticlesButton from '@/components/UI/Button';
-// import SingleInput from '@/components/Articles/SingleInput';
-import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import IsDev from '@/components/UI/IsDev';
-// import { ChromePicker } from 'react-color';
 import { useSocketStore } from '@/hooks/useSocketStore';
 import { useRouter } from 'next/navigation';
 
-import Ad from '@articles-media/articles-dev-box/Ad';
+import NicknameInput from '@articles-media/articles-dev-box/NicknameInput';
+import GameMenuPrimaryButtonGroup from '@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup';
+const Ad = dynamic(() =>
+    import('@articles-media/articles-dev-box/Ad'),
+    { ssr: false }
+);
 const ReturnToLauncherButton = dynamic(() =>
     import('@articles-media/articles-dev-box/ReturnToLauncherButton'),
     { ssr: false }
 );
-
-import { useStore } from '@/hooks/useStore';
-
+const SessionButton = dynamic(() =>
+    import('@articles-media/articles-dev-box/SessionButton'),
+    { ssr: false }
+);
 import { useUserDetails, useUserToken } from '@articles-media/articles-dev-box';
-
-// import useUserToken from '@/hooks/user/useUserToken';
-// import useUserDetails from '@/hooks/user/useUserDetails';
-
-// import GameScoreboard from 'components/Games/GameScoreboard'
-
-// const Ad = dynamic(() => import('components/Ads/Ad'), {
-//     ssr: false,
-// });
-
-const InfoModal = dynamic(
-    () => import('@/components/UI/InfoModal'),
-    { ssr: false }
-)
-
-const SettingsModal = dynamic(
-    () => import('@/components/UI/SettingsModal'),
-    { ssr: false }
-)
-
-// const PrivateGameModal = dynamic(
-//     () => import('app/(site)/community/games/four-frogs/components/PrivateGameModal'),
-//     { ssr: false }
-// )
 
 const game_key = '8-ball-pool'
 const game_name = '8 Ball Pool'
@@ -116,7 +93,7 @@ export default function LandingPage() {
 
     const _hasHydrated = useStore(state => state._hasHydrated)
     const toggleDarkMode = useStore(state => state.toggleDarkMode);
-    
+
     const setShowInfoModal = useStore(state => state.setShowInfoModal);
     const setShowSettingsModal = useStore(state => state.setShowSettingsModal);
     const setShowCreditsModal = useStore(state => state.setShowCreditsModal);
@@ -164,7 +141,7 @@ export default function LandingPage() {
 
     return (
 
-        <div className="amcot-pool-landing-page">
+        <div className="landing-page">
 
             <div className='background-wrap'>
                 <Image
@@ -196,51 +173,10 @@ export default function LandingPage() {
 
                         <div className='card-header d-flex align-items-center'>
 
-                            <div className="flex-grow-1">
+                            <NicknameInput
+                                useStore={useStore}
+                            />
 
-                                <div>
-                                    <label htmlFor="nickname">Nickname</label>
-                                </div>
-
-                                <div className='d-flex align-items-end'>
-                                    <div className="form-group articles mb-0 w-100">
-                                        {/* <SingleInput
-                                            value={nickname}
-                                            setValue={setNickname}
-                                            noMargin
-                                        /> */}
-                                        <input
-                                            autoComplete='off'
-                                            // id={item_key}
-                                            type="text"
-                                            className='w-100'
-                                            // autoFocus={autoFocus && true}
-                                            // onBlur={onBlur}
-                                            // placeholder={placeholder}
-                                            disabled={!_hasHydrated}
-                                            value={_hasHydrated ? nickname : ''}
-                                            // onKeyDown={onKeyDown}
-                                            onChange={(e) => {
-                                                setNickname(e.target.value)
-                                            }}
-                                            style={{
-                                                borderBottom: "3px solid var(--articles-primary-color)"
-                                            }}
-                                        />
-                                    </div>
-                                    <ArticlesButton
-                                        className=""
-                                        onClick={() => {
-                                            randomNickname()
-                                        }}
-                                    >
-                                        <i className="fad fa-random me-0"></i>
-                                    </ArticlesButton>
-                                </div>
-
-                                <div className='mt-1' style={{ fontSize: '0.8rem' }}>Visible to all players</div>
-
-                            </div>
                         </div>
 
                         <div className="card-body">
@@ -502,95 +438,54 @@ export default function LandingPage() {
 
                         <div className="card-footer d-flex flex-wrap justify-content-center">
 
-                            <div className='d-flex w-50'>
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                    onClick={() => {
-                                        setShowSettingsModal(true)
-                                    }}
-                                >
-                                    <i className="fad fa-cog"></i>
-                                    Settings
-                                </ArticlesButton>
-                                <ArticlesButton
-                                    className={``}
-                                    small
-                                    onClick={() => {
-                                        toggleDarkMode();
-                                    }}
-                                >
-                                    <i className="fad fa-palette"></i>
-                                </ArticlesButton>
-                            </div>
-
-                            <ArticlesButton
-                                className={`w-50`}
-                                small
-                                onClick={() => {
-                                    setShowInfoModal({
-                                        game: game_name
-                                    })
-                                }}
-                            >
-                                <i className="fad fa-info-square"></i>
-                                Rules & Controls
-                            </ArticlesButton>
-
-                            {/* <Link href={ROUTES.GAMES} className='w-50'>
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                    onClick={() => {
-    
-                                    }}
-                                >
-                                    <i className="fad fa-sign-out fa-rotate-180"></i>
-                                    Leave Game
-                                </ArticlesButton>
-                            </Link> */}
-
-                            <a href="https://github.com/Articles-Joey/8-ball-pool" className='w-50' target="_blank" rel="noopener noreferrer">
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                >
-                                    <i className="fab fa-github"></i>
-                                    Github
-                                </ArticlesButton>
-                            </a>
-
-                            <ArticlesButton
-                                className={`w-50`}
-                                small
-                                onClick={() => {
-                                    setShowCreditsModal(true)
-                                }}
-                            >
-                                <i className="fad fa-users"></i>
-                                Credits
-                            </ArticlesButton>
+                            <GameMenuPrimaryButtonGroup
+                                useStore={useStore}
+                                type="Landing"
+                            />
 
                         </div>
 
                     </div>
 
+                    <SessionButton
+                        port={process.env.NEXT_PUBLIC_GAME_PORT}
+                        friendsButton={true}
+                    />
+
                     <ReturnToLauncherButton />
+
                 </div>
+
+                {/* <GameScoreboard
+                    game={process.env.NEXT_PUBLIC_GAME_NAME}
+                    style="Default"
+                    darkMode={darkMode ? true : false}
+                    prepend={
+                        <>
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '200px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <RotatingMascot />
+                            </div>
+                        </>
+                    }
+                /> */}
 
                 <Ad
                     style="Default"
                     section={"Games"}
-                    section_id={game_name}
+                    section_id={process.env.NEXT_PUBLIC_GAME_NAME}
                     darkMode={darkMode ? true : false}
                     user_ad_token={userToken}
                     userDetails={userDetails}
                     userDetailsLoading={userDetailsLoading}
                 />
-
-                {/* <GameScoreboard game="Death Race" /> */}
-
-                {/* <Ad section={"Games"} section_id={game_name} /> */}
 
             </div>
         </div>

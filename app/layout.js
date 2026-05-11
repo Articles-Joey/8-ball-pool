@@ -1,5 +1,3 @@
-// import { Geist, Geist_Mono } from "next/font/google";
-
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,19 +14,6 @@ import "@articles-media/articles-gamepad-helper/dist/articles-gamepad-helper.css
 
 import SocketLogicHandler from "@/components/SocketLogicHandler";
 import LayoutClient from './layout-client';
-import { Suspense } from 'react';
-// import DarkModeHandler from '@/components/UI/DarkModeHandler';
-import GlobalClientModals from '@/components/UI/GlobalClientModals';
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
 
 export const metadata = {
   title: "8 Ball Pool",
@@ -41,24 +26,12 @@ export default function RootLayout({ children }) {
 
       <head>
 
-        {/* <link
-          rel="stylesheet"
-          href={`${process.env.NEXT_PUBLIC_CDN}fonts/fontawsome/css/all.min.css`}
-        /> */}
-
       </head>
 
-      <body
-      // className={`${geistSans.variable} ${geistMono.variable}`}
-      >
+      <body>
 
-        {/* <DarkModeHandler /> */}
         <SocketLogicHandler />
         <LayoutClient />
-
-        <Suspense>
-          <GlobalClientModals />
-        </Suspense>
 
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
