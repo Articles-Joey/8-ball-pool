@@ -8,16 +8,16 @@ import ArticlesButton from '@/components/UI/Button';
 
 import useFullscreen from '@articles-media/articles-dev-box/useFullscreen';
 import GameMenu from '@articles-media/articles-dev-box/GameMenu';
-import LeftPanelContent from '../components/LeftPanel';
+import LeftPanelContent from '@/components/UI/LeftPanel';
 import { useSocketStore } from '@/hooks/useSocketStore';
-import MenuBarControls from '../components/MenuBarControls';
-import { useEightBallStore } from '@/hooks/useEightBallStore';
-import TouchControls from '../components/TouchControls';
+// import MenuBarControls from '../../components/UI/MenuBarControls';
+// import { useEightBallStore } from '@/hooks/useEightBallStore';
+import TouchControls from '@/components/UI/TouchControls';
 import classNames from 'classnames';
 import { useStore } from '@/hooks/useStore';
 import useTouchControlsStore from '@/hooks/useTouchControlsStore';
 
-const GameCanvas = dynamic(() => import('../components/GameCanvas'), {
+const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
 });
 
@@ -35,7 +35,7 @@ export default function GamePage() {
     const params = Object.fromEntries(searchParams.entries());
     const { server } = params
 
-    const [players, setPlayers] = useState([])
+    // const [players, setPlayers] = useState([])
 
     useEffect(() => {
 

@@ -172,6 +172,44 @@ export const useEightBallStore = create(persist((set) => ({
         }))
     },
 
+    peerId: "",
+    setPeerId: (newValue) => {
+        set((prev) => ({
+            peerId: newValue
+        }))
+    },
+
+    connectionPeerId: "",
+    setConnectionPeerId: (newValue) => {
+        set((prev) => ({
+            connectionPeerId: newValue
+        }))
+    },
+
+    connected: false,
+    setConnected: (newValue) => {
+        set((prev) => ({
+            connected: newValue
+        }))
+    },
+
+    players: [],
+    setPlayers: (newValue) => {
+        set((prev) => ({
+            players: newValue
+        }))
+    },
+
+    lastLaunch: null,
+    setLastLaunch: (newValue) => {
+        set((prev) => ({
+            lastLaunch: newValue
+        }))
+    },
+
+    peerRef: { current: null },
+    connectionRef: { current: null },
+
 }), {
     name: 'eight-ball-settings',
     partialize: (state) => ({

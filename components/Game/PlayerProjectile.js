@@ -1,14 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSphere } from "@react-three/cannon";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { degToRad } from "three/src/math/MathUtils";
-import { useHotkeys } from "react-hotkeys-hook";
 import { MathUtils } from "three";
 import { useFrame } from "@react-three/fiber";
 import { Image } from "@react-three/drei";
 import { useStore } from "@/hooks/useStore";
+import { useSearchParams } from "next/navigation";
 
 export default function PlayerProjectile() {
+
+    let searchParams = useSearchParams()
+    let searchParamsObject = Object.fromEntries(searchParams.entries());
+    let { game_id } = searchParamsObject;
+
+    const peerId = useEightBallStore(state => state.peerId);
+    const currentTurn = useEightBallStore(state => state.currentTurn);
+
+    const showAimingTools = useMemo(() => {
+
+        if (!game_id) {
+            return true;
+        } else {
+            return peerId === currentTurn;
+        }
+
+    }, [game_id, peerId, currentTurn])
 
     const toolsRef = useRef()
 
@@ -23,7 +40,7 @@ export default function PlayerProjectile() {
         linearDamping: 0.2, // Adds a slight resistance to rolling
         angularDamping: 0.2, // Adds a slight resistance to spinning
         // type: 'Dynamic',
-        args: [1, 1, 1],
+        args: [1],
         position: [0, 5, 25],
         onCollide: (e) => {
             if (e?.body?.userData?.isTableBottom) {
@@ -43,8 +60,13 @@ export default function PlayerProjectile() {
     const cuePower = useEightBallStore(state => state.cuePower);
     const nudge = useEightBallStore(state => state.nudge);
     const setNudge = useEightBallStore(state => state.setNudge);
-    // const theme = useEightBallStore(state => state.theme);
+
     const darkMode = useStore(state => state.darkMode);
+
+    // useEffect(() => {
+    //     resetBall();
+    //     api.wakeUp();
+    // }, []);
 
     // const nudgeBall = () => {
     //     // Apply impulse or force to the ball
@@ -53,6 +75,8 @@ export default function PlayerProjectile() {
 
     useEffect(() => {
         if (nudge) {
+            setCueAnim(true);
+            cueAnimStart.current = performance.now();
             nudgeBall();
             setNudge(false);
         }
@@ -72,12 +96,6 @@ export default function PlayerProjectile() {
 
     const cueStickRef = useRef();
     const cueAnimStart = useRef(null);
-
-    useHotkeys(['Enter'], () => {
-        setCueAnim(true);
-        cueAnimStart.current = performance.now();
-        nudgeBall();
-    });
 
     useFrame(() => {
         if (cueAnim && cueStickRef.current) {
@@ -102,33 +120,27 @@ export default function PlayerProjectile() {
 
     useEffect(() => {
 
-        if (toolsRef.current) {
+        // Get the current position of the sphere from the physics API
+        const unsubscribe = api.position.subscribe((position) => {
 
-            // Get the current position of the sphere from the physics API
-            api.position.subscribe((position) => {
+            if (position[1] < -10) {
 
-                if (position[1] < -10) {
+                resetBall()
 
-                    resetBall()
+            }
 
-                }
-
+            if (toolsRef.current) {
                 toolsRef.current.position.set(...position);
+            }
 
-            });
+        });
 
-            // api.velocity.subscribe((velocity) => {
-
-            //     toolsRef.current.velocity.set(...velocity);
-
-            // });
-
-        }
+        return unsubscribe;
 
     }, [api.position]);
 
     useEffect(() => {
-        api?.velocity.subscribe((position) => {
+        const unsubscribe = api?.velocity.subscribe((position) => {
 
             // console.log(position)
             setIsStopped(
@@ -140,14 +152,15 @@ export default function PlayerProjectile() {
             )
             // toolsRef?.current?.velocity?.set(...position);
 
-            const [vx, vy, vz] = position;
-            const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
-            if (speed < 0.5 && speed > 0.1) { // threshold for sleep
+            // const [vx, vy, vz] = position;
+            // const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
+            // if (speed < 0.5 && speed > 0.1) { // threshold for sleep
 
-                api.sleep();
+            //     api.sleep();
 
-            }
+            // }
         });
+        return unsubscribe;
     }, [api.velocity]);
 
     return (
@@ -171,7 +184,7 @@ export default function PlayerProjectile() {
             </mesh>
 
             {/* Aiming tools */}
-            <group ref={toolsRef} rotation={[0, degToRad(cueRotation), 0]}>
+            {(showAimingTools || true) && <group ref={toolsRef} rotation={[0, degToRad(cueRotation), 0]}>
 
                 {darkMode &&
                     <pointLight
@@ -249,7 +262,7 @@ export default function PlayerProjectile() {
                     </>
                 )}
 
-            </group>
+            </group>}
 
         </group>
     )

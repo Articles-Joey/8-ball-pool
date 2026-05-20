@@ -204,7 +204,7 @@ export default function Balls() {
 
     return (
         <group>
-            {!ballPositionsUpdated && ballsRef?.current?.map(cfg => (
+            {ballsRef?.current?.map(cfg => (
                 <Ball
                     key={cfg.ball}
                     position={cfg.position}
@@ -238,7 +238,7 @@ function Ball({
 
     const [ref, api] = useSphere(() => ({
         mass: 4,
-        args: [1, 1, 1],
+        args: [1],
         position: position,
         material: { friction: 20.8, restitution: 1.1 },
         linearDamping: 0.2, // Adds a slight resistance to rolling

@@ -1,7 +1,7 @@
-import { createContext, createRef, forwardRef, memo, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createContext, createRef, forwardRef, memo, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Canvas, useFrame } from "@react-three/fiber"
-import { Sky, useDetectGPU, useTexture, OrbitControls, Cylinder, QuadraticBezierLine, Text, Image } from "@react-three/drei";
+import { Sky, useDetectGPU, useTexture, OrbitControls, Cylinder, QuadraticBezierLine, Text, Image, Stats } from "@react-three/drei";
 
 // import { useCannonStore } from "@/components/Games/Cannon/hooks/useCannonStore";
 import { Debug, Physics, useBox, useSphere } from "@react-three/cannon";
@@ -30,6 +30,7 @@ import { useEightBallStore } from "@/hooks/useEightBallStore";
 // import { useHotkeys } from "react-hotkeys-hook";
 // import { MathUtils } from "three";
 import PlayerProjectile from "./PlayerProjectile";
+import KeyboardControls from "./KeyboardControls";
 import Dartboard from "@/components/Game/Dartboard";
 import { Table, TableBottom, TableLegs } from "@/components/Game/Table";
 import Balls from "@/components/Game/Balls";
@@ -40,11 +41,25 @@ import CameraControls from "@/components/Game/CameraControls";
 import RoomWalls from "@/components/Game/RoomWalls";
 import { degToRad } from "three/src/math/MathUtils";
 import { useStore } from "@/hooks/useStore";
+import HallwayWalls from "./HallwayWalls";
 
 function GameCanvas(props) {
 
     // const theme = useEightBallStore(state => state.theme);
     const darkMode = useStore(state => state.darkMode);
+    const showStats = useStore((state) => state?.debugConfig?.showStats);
+
+    const [isReady, setIsReady] = useState(false)
+
+    useEffect(() => {
+
+        const timer = setTimeout(() => {
+            setIsReady(true)
+        }, 1000)
+
+        return () => clearTimeout(timer)
+
+    }, [])
 
     // const GPUTier = useDetectGPU()
 
@@ -56,40 +71,12 @@ function GameCanvas(props) {
         debug: state.debug,
     }));
 
-    let gameContent = (
-        <>
-
-            <PlayerProjectile />
-
-            <Balls />
-
-            <OuterWalls />
-
-            <InnerWalls />
-
-            {/* <Holes /> */}
-
-            <Table />
-            <TableBottom />
-
-        </>
-    )
-
-    let physicsContent
-    if (debug) {
-        physicsContent = (
-            <Debug>
-                {gameContent}
-            </Debug>
-        )
-    } else {
-        physicsContent = (
-            gameContent
-        )
-    }
-
     return (
         <Canvas camera={{ position: [-10, 40, 40], fov: 50 }}>
+
+            {showStats && <>
+                <Stats className="stats-overlay" />
+            </>}
 
             <CameraControls />
 
@@ -130,6 +117,8 @@ function GameCanvas(props) {
             />
 
             <RoomWalls />
+
+            <HallwayWalls />
 
             <TableLegs />
 
@@ -334,7 +323,26 @@ function GameCanvas(props) {
 
             <Physics>
 
-                {physicsContent}
+                <Debug scale={debug ? 1 : 0}>
+                    {isReady &&
+                        <>
+                            {/* <Suspense> */}
+                                <KeyboardControls />
+                                <PlayerProjectile />
+                                <Balls />
+                            {/* </Suspense> */}
+                        </>
+                    }
+
+                    <OuterWalls />
+
+                    <InnerWalls />
+
+                    {/* <Holes /> */}
+
+                    <Table />
+                    <TableBottom />
+                </Debug>
 
             </Physics>
 

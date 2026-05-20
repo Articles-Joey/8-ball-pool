@@ -3,35 +3,31 @@ import { useTexture } from "@react-three/drei";
 
 import * as THREE from 'three'
 import { degToRad } from "three/src/math/MathUtils";
+// import WoodFloor from "./WoodFloor";
+// import { useTexture } from "@react-three/drei";
+// import * as THREE from 'three'
 
-export default function HallwayWalls() {
+export default function RoomWalls() {
 
     return (
-        <group position={[0, 0, 0]}>
-
-            <StoneBrickWall
-                // rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, 0, -150]}
-                args={[300, 150]}
-            />
-
-            <StoneBrickWall
-                rotation={[0, 0, 0]}
-                invertFace={true}
-                position={[0, 0, 150]}
-                args={[300, 150]}
-            />
+        <group position={[-200, 0, 0]}>
 
             <StoneBrickWall
                 rotation={[0, -Math.PI / 2, 0]}
-                position={[150, 0, 0]}
-                args={[300, 150]}
+                position={[50, 0, 0]}
+                args={[600, 150]}
             />
 
             <StoneBrickWall
                 rotation={[0, -Math.PI / -2, 0]}
-                position={[-150, 0, 0]}
-                args={[300, 150]}
+                position={[-50, 0, 0]}
+                args={[600, 150]}
+            />
+
+            <WoodFloor
+                rotation={[-Math.PI / 2, 0, 0]}
+                position={[0, -30, 0]}
+                args={[100, 600]}
             />
 
         </group>
@@ -57,10 +53,14 @@ function StoneBrickWall(props) {
         return cloned;
     }, [textures]);
 
+    // Auto-set repeat and wrapping based on wall size
+    const width = props.args?.[0] || 1;
+    const height = props.args?.[1] || 1;
+
     Object.values(texture).forEach((t) => {
         if (t instanceof THREE.Texture) {
             t.wrapS = t.wrapT = THREE.RepeatWrapping;
-            t.repeat.set(5, 3.5);
+            t.repeat.set(width / 100, height / 50);
         }
     });
 
@@ -100,6 +100,46 @@ function StoneBrickWall(props) {
                 <meshStandardMaterial
                     color={"black"}
                 />
+            </mesh>
+        </group>
+    )
+
+};
+
+function WoodFloor(props) {
+
+    const base_link = `${process.env.NEXT_PUBLIC_CDN}games/US Tycoon/Textures/WoodFloor041_1K-JPG/`
+
+    const textures = useTexture({
+        map: `${base_link}WoodFloor041_1K-JPG_Color.jpg`,
+        // displacementMap: `${base_link}GroundSand005_DISP_1K.jpg`,
+        // normalMap: `${base_link}GroundSand005_NRM_1K.jpg`,
+        // roughnessMap: `${base_link}GroundSand005_BUMP_1K.jpg`,
+        // aoMap: `${base_link}GroundSand005_AO_1K.jpg`,
+    })
+
+    const texture = useMemo(() => {
+        const cloned = { ...textures };
+        if (cloned.map) cloned.map = cloned.map.clone();
+        return cloned;
+    }, [textures]);
+
+    // Auto-set repeat and wrapping based on floor size
+    const width = props.args?.[0] || 1;
+    const height = props.args?.[1] || 1;
+
+    Object.values(texture).forEach((t) => {
+        if (t instanceof THREE.Texture) {
+            t.wrapS = t.wrapT = THREE.RepeatWrapping;
+            t.repeat.set(width / 50, height / 100);
+        }
+    });
+
+    return (
+        <group {...props}>
+            <mesh>
+                <planeGeometry {...props} />
+                <meshStandardMaterial {...texture} />
             </mesh>
         </group>
     )

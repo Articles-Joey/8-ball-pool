@@ -134,7 +134,10 @@ export default function LandingPage() {
         // First try and establish connection via peerjs before redirecting page
 
         const params = new URLSearchParams();
-        params.set("game_id", prepareMultiplayer.room_code);
+        params.set(
+            "game_id", 
+            `articles-media-8-ball-pool-${prepareMultiplayer.room_code}`
+        );
         router.push(`/play?${params.toString()}`);
 
     }
@@ -152,24 +155,24 @@ export default function LandingPage() {
                 />
             </div>
 
-            <div className="container d-flex flex-column-reverse flex-lg-row justify-content-center align-items-center">
+            <div className="container d-flex flex-column-reverse flex-lg-row justify-content-center align-items-center py-3">
 
                 <div
                     style={{ "width": "20rem" }}
                 >
 
-                    <div
-                        className="card card-articles card-sm mb-2"
-                    >
+                    <div style={{ position: 'relative', height: '200px' }}>
+                        <Image
+                            src={"/img/logo.webp"}
+                            alt=""
+                            fill
+                            style={{ objectFit: 'cover' }}
+                        />
+                    </div>
 
-                        <div style={{ position: 'relative', height: '200px' }}>
-                            <Image
-                                src={"/img/logo.webp"}
-                                alt=""
-                                fill
-                                style={{ objectFit: 'cover' }}
-                            />
-                        </div>
+                    <div
+                        className="card card-articles card-sm mb-3"
+                    >
 
                         <div className='card-header d-flex align-items-center'>
 

@@ -1,9 +1,28 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import classNames from "classnames";
 
 import ArticlesButton from "@/components/UI/Button";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 
 export default function MenuBarControls() {
+
+    let searchParams = useSearchParams()
+    let searchParamsObject = Object.fromEntries(searchParams.entries());
+    let { game_id } = searchParamsObject;
+
+    const peerId = useEightBallStore(state => state.peerId);
+    const currentTurn = useEightBallStore(state => state.currentTurn);
+
+    const disableAimingTools = useMemo(() => {
+
+        if (!game_id) {
+            return false;
+        } else {
+            return peerId !== currentTurn;
+        }
+
+    }, [game_id, peerId, currentTurn])
 
     const cueRotation = useEightBallStore(state => state.cueRotation);
     const setCueRotation = useEightBallStore(state => state.setCueRotation);
@@ -30,6 +49,9 @@ export default function MenuBarControls() {
         const intervalRef = useRef(null);
 
         const startRotation = () => {
+
+            if (disableAimingTools) return;
+
             intervalRef.current = setInterval(() => {
                 if (direction === "increase") {
                     if (cueRotationRef.current >= 360) {
@@ -61,6 +83,9 @@ export default function MenuBarControls() {
         const intervalRef = useRef(null);
 
         const startPowerChange = () => {
+
+            if (disableAimingTools) return;
+
             intervalRef.current = setInterval(() => {
                 if (direction === "increase") {
                     if (cuePowerRef.current < 100) {
@@ -122,7 +147,7 @@ export default function MenuBarControls() {
 
                     <div className="rotation">
                         <div
-                            className="floating-button rotation-left"
+                            className={classNames("floating-button rotation-left", { "disabled": disableAimingTools })}
                             onMouseDown={increaseRotationHandlers.startRotation}
                             onMouseUp={increaseRotationHandlers.stopRotation}
                             onTouchStart={increaseRotationHandlers.startRotation}
@@ -132,7 +157,7 @@ export default function MenuBarControls() {
                         </div>
 
                         <div
-                            className="floating-button rotation-right"
+                            className={classNames("floating-button rotation-right", { "disabled": disableAimingTools })}
                             onMouseDown={decreaseRotationHandlers.startRotation}
                             onMouseUp={decreaseRotationHandlers.stopRotation}
                             onTouchStart={decreaseRotationHandlers.startRotation}
@@ -143,8 +168,9 @@ export default function MenuBarControls() {
                     </div>
 
                     <div
-                        className="floating-button launch"
+                        className={classNames("floating-button launch", { "disabled": disableAimingTools })}
                         onClick={() => {
+                            if (disableAimingTools) return;
                             console.log("Launch")
                             setNudge(true)
                         }}
@@ -153,7 +179,7 @@ export default function MenuBarControls() {
                     </div>
 
                     <div
-                        className="floating-button increase-power"
+                        className={classNames("floating-button increase-power", { "disabled": disableAimingTools })}
                         onMouseDown={increasePowerHandlers.startPowerChange}
                         onMouseUp={increasePowerHandlers.stopPowerChange}
                         onTouchStart={increasePowerHandlers.startPowerChange}
@@ -163,7 +189,7 @@ export default function MenuBarControls() {
                     </div>
 
                     <div
-                        className="floating-button decrease-power"
+                        className={classNames("floating-button decrease-power", { "disabled": disableAimingTools })}
                         onMouseDown={decreasePowerHandlers.startPowerChange}
                         onMouseUp={decreasePowerHandlers.stopPowerChange}
                         onTouchStart={decreasePowerHandlers.startPowerChange}
@@ -178,6 +204,7 @@ export default function MenuBarControls() {
             <div>
                 <ArticlesButton
                     small
+                    disabled={disableAimingTools}
                     onMouseDown={increaseRotationHandlers.startRotation}
                     onMouseUp={increaseRotationHandlers.stopRotation}
                     onTouchStart={increaseRotationHandlers.startRotation}
@@ -193,6 +220,7 @@ export default function MenuBarControls() {
                 <span className="badge bg-black">{cueRotation}</span>
                 <ArticlesButton
                     small
+                    disabled={disableAimingTools}
                     onMouseDown={decreaseRotationHandlers.startRotation}
                     onMouseUp={decreaseRotationHandlers.stopRotation}
                     onTouchStart={decreaseRotationHandlers.startRotation}
@@ -207,6 +235,7 @@ export default function MenuBarControls() {
                 </ArticlesButton>
                 <ArticlesButton
                     small
+                    disabled={disableAimingTools}
                     // active={}
                     onClick={() => {
                         setNudge(true)
@@ -216,6 +245,7 @@ export default function MenuBarControls() {
                 </ArticlesButton>
                 <ArticlesButton
                     small
+                    disabled={disableAimingTools}
                     // active={}
                     onMouseDown={increasePowerHandlers.startPowerChange}
                     onMouseUp={increasePowerHandlers.stopPowerChange}
@@ -227,6 +257,7 @@ export default function MenuBarControls() {
                 <span className="badge bg-black">{cuePower}</span>
                 <ArticlesButton
                     small
+                    disabled={disableAimingTools}
                     // active={}
                     onMouseDown={decreasePowerHandlers.startPowerChange}
                     onMouseUp={decreasePowerHandlers.stopPowerChange}
