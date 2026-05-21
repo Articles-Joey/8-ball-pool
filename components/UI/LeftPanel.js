@@ -2,7 +2,7 @@ import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { Suspense, useEffect } from "react";
 
 import PeerDetails from "@/components/UI/PeerDetails";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/hooks/useStore";
 import DebugPanel from "@/components/UI/DebugPanel";
 
@@ -64,10 +64,11 @@ export default function LeftPanelContent(props) {
 
                     <div className="d-flex flex-wrap">
 
-                        <GameMenuPrimaryButtonGroup 
-                        useStore={useStore}
-                        type="GameMenu"
-                    />
+                        <GameMenuPrimaryButtonGroup
+                            useStore={useStore}
+                            type="GameMenu"
+                            useRouter={useRouter}
+                        />
 
                     </div>
 
