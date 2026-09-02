@@ -9,7 +9,7 @@
     "dev": "next dev --webpack -p 3015",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint"
   },
   "dependencies": {
     "@articles-media/articles-dev-box": "^1.3.5",
@@ -25,22 +25,21 @@
     "bootstrap": "^5.3.8",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
-    "next": "^16.2.2",
+    "next": "^16.3.4",
     "peerjs": "^1.5.5",
     "react": "^19.2.4",
     "react-bootstrap": "^2.10.10",
     "react-countdown": "^2.3.6",
     "react-dom": "^19.2.4",
     "react-hotkeys-hook": "^5.2.4",
-    "sass": "^1.97.0",
+    "sass": "^1.102.0",
     "socket.io-client": "^4.8.1",
     "swr": "^2.4.1",
-    "three": "^0.178.0"
+    "three": "^0.185.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^10",
-    "eslint-config-next": "16.2.2"
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4"
   }
 }
