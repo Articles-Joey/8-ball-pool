@@ -33,9 +33,6 @@ const SessionButton = dynamic(() =>
 );
 import { useUserDetails, useUserToken } from '@articles-media/articles-dev-box';
 
-const game_key = '8-ball-pool'
-const game_name = '8 Ball Pool'
-
 export default function LandingPage() {
 
     // const {
