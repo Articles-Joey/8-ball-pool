@@ -13,7 +13,8 @@ export default function FlickerFireLight() {
         const time = performance.now() * 0.002 * speed;
         const flicker = Math.sin(time) * 0.5 + 0.5; // 0 to 1
         const random = Math.random() * 0.2 + 0.9; // Slight randomness
-        const newIntensity = minIntensity + (maxIntensity - minIntensity) * flicker * random;
+        const newIntensity =
+            minIntensity + (maxIntensity - minIntensity) * flicker * random;
         setIntensity(newIntensity);
         if (lightRef.current) {
             lightRef.current.intensity = newIntensity;
@@ -27,7 +28,7 @@ export default function FlickerFireLight() {
                 intensity={intensity}
                 angle={1}
                 penumbra={1}
-                color={'red'}
+                color={"red"}
             />
 
             <spotLight
@@ -35,7 +36,7 @@ export default function FlickerFireLight() {
                 intensity={5000}
                 angle={2}
                 penumbra={1}
-                color={'orange'}
+                color={"orange"}
             />
         </group>
     );

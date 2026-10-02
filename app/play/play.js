@@ -1,107 +1,64 @@
-"use client"
-import { useEffect, useContext, useState, useRef, useMemo } from 'react';
+"use client";
 
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import dynamic from 'next/dynamic'
+import dynamic from "next/dynamic";
+import Box from "@mui/material/Box";
+import useFullscreen from "@articles-media/articles-dev-box/useFullscreen";
+import GameMenu from "@articles-media/articles-dev-box/GameMenu";
+import LeftPanelContent from "@/components/UI/LeftPanel";
+import TouchControls from "@/components/UI/TouchControls";
+import { useStore } from "@/hooks/useStore";
+import useTouchControlsStore from "@/hooks/useTouchControlsStore";
 
-import ArticlesButton from '@/components/UI/Button';
-
-import useFullscreen from '@articles-media/articles-dev-box/useFullscreen';
-import GameMenu from '@articles-media/articles-dev-box/GameMenu';
-import LeftPanelContent from '@/components/UI/LeftPanel';
-import { useSocketStore } from '@/hooks/useSocketStore';
-// import MenuBarControls from '../../components/UI/MenuBarControls';
-// import { useEightBallStore } from '@/hooks/useEightBallStore';
-import TouchControls from '@/components/UI/TouchControls';
-import classNames from 'classnames';
-import { useStore } from '@/hooks/useStore';
-import useTouchControlsStore from '@/hooks/useTouchControlsStore';
-
-const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
+const GameCanvas = dynamic(() => import("@/components/Game/GameCanvas"), {
     ssr: false,
 });
 
 export default function GamePage() {
-
-    const {
-        socket
-    } = useSocketStore(state => ({
-        socket: state.socket
-    }));
-
-    // const router = useRouter()
-    // const pathname = usePathname()
-    const searchParams = useSearchParams()
-    const params = Object.fromEntries(searchParams.entries());
-    const { server } = params
-
-    // const [players, setPlayers] = useState([])
-
-    useEffect(() => {
-
-        // if (server && socket.connected) {
-        //     socket.emit('join-room', `game:cannon-room-${server}`, {
-        //         game_id: server,
-        //         nickname: JSON.parse(localStorage.getItem('game:nickname')),
-        //         client_version: '1',
-
-        //     });
-        // }
-
-        // return function cleanup() {
-        //     socket.emit('leave-room', 'game:glass-ceiling-landing')
-        // };
-
-    }, [server, socket]);
-
-    const showMenu = useStore(state => state.showMenu);
-    const sceneKey = useStore(state => state.sceneKey);
-    const sidebar = useStore(state => state.sidebar);
-
-    const touchControlsEnabled = useTouchControlsStore(state => state.enabled);
-
-    // const [gameState, setGameState] = useState(false)
-
-    // const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
+    const showMenu = useStore((state) => state.showMenu);
+    const sceneKey = useStore((state) => state.sceneKey);
+    const sidebar = useStore((state) => state.sidebar);
+    const touchControlsEnabled = useTouchControlsStore(
+        (state) => state.enabled,
+    );
+    const { isFullscreen } = useFullscreen();
 
     return (
-
-        <div
-            className={classNames(
-                `game-page`,
-                {
-                    'menu-open': showMenu,
-                    'fullscreen': useFullscreen().isFullscreen,
-                    'show-sidebar': sidebar,
-                }
-            )}
+        <Box
+            className={[
+                "game-page",
+                showMenu && "menu-open",
+                isFullscreen && "fullscreen",
+                sidebar && "show-sidebar",
+            ]
+                .filter(Boolean)
+                .join(" ")}
             id={`${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`}
+            sx={{ position: "relative", display: "flex" }}
         >
-
             <GameMenu
                 useStore={useStore}
                 LeftPanelContent={LeftPanelContent}
-                menuBarConfig={{
-                    style: "Bar",
-                    menuBarButtonPosition: "Left"
-                }}
-                sidebarConfig={{
-                    style: "Static Panel",
-                }}
+                menuBarConfig={{ style: "Bar", menuBarButtonPosition: "Left" }}
+                sidebarConfig={{ style: "Static Panel" }}
             />
-
-            <div className='canvas-wrap'>
-
-                {touchControlsEnabled &&
-                    <TouchControls />
-                }
-
-                <GameCanvas
-                    key={sceneKey}
-                />
-
-            </div>
-
-        </div>
+            <Box
+                sx={{
+                    position: "relative",
+                    width: "100vw",
+                    minWidth: 0,
+                    height: "100vh",
+                    "& canvas": {
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%",
+                        left: 0,
+                        top: 0,
+                    },
+                }}
+            >
+                {touchControlsEnabled && <TouchControls />}
+                <GameCanvas key={sceneKey} />
+            </Box>
+        </Box>
     );
 }

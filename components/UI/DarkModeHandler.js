@@ -1,35 +1,8 @@
-"use client"
+"use client";
+
+import SharedDarkModeHandler from "@articles-media/articles-dev-box/DarkModeHandler";
 import { useStore } from "@/hooks/useStore";
-import { useEffect } from "react";
 
-// import { useEightBallStore } from "@/hooks/useEightBallStore";
-// import { useStore } from "../hooks/useStore";
-
-export default function DarkModeHandler({ children }) {
-
-    // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useStore((state) => state.darkMode);
-    const hasHydrated = useStore((state) => state._hasHydrated);
-
-    useEffect(() => {
-
-        if (!hasHydrated) return;
-
-        if (darkMode == null) {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            useStore.getState().setDarkMode(prefersDark ? true : false);
-        }
-
-        if (darkMode) {
-            document.body.setAttribute("data-bs-theme", 'dark');
-        } else {
-            document.body.setAttribute("data-bs-theme", 'light');
-        }
-
-    }, [darkMode, hasHydrated]);
-
-    return (
-        <>
-        </>
-    );
+export default function DarkModeHandler() {
+    return <SharedDarkModeHandler useStore={useStore} />;
 }

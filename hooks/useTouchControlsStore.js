@@ -1,31 +1,29 @@
 // import { create } from 'zustand'
-import { createWithEqualityFn as create } from 'zustand/traditional'
+import { createWithEqualityFn as create } from "zustand/traditional";
 
 const useTouchControlsStore = create((set, get) => ({
-
     enabled: false,
     setEnabled: (newValue) => {
         set((prev) => ({
-            enabled: newValue
-        }))
+            enabled: newValue,
+        }));
     },
     toggleEnabled: () => {
         set(() => ({
-            enabled: !get().enabled
-        }))
+            enabled: !get().enabled,
+        }));
     },
 
     touchControls: {
         jump: false,
         left: false,
-        right: false
+        right: false,
     },
     setTouchControls: (newValue) => {
         set((prev) => ({
-            touchControls: newValue
-        }))
-    }
+            touchControls: newValue,
+        }));
+    },
+}));
 
-}))
-
-export default useTouchControlsStore
+export default useTouchControlsStore;

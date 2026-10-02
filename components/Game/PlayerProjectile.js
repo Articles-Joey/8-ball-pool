@@ -9,25 +9,22 @@ import { useStore } from "@/hooks/useStore";
 import { useSearchParams } from "next/navigation";
 
 export default function PlayerProjectile() {
-
-    let searchParams = useSearchParams()
+    let searchParams = useSearchParams();
     let searchParamsObject = Object.fromEntries(searchParams.entries());
     let { game_id } = searchParamsObject;
 
-    const peerId = useEightBallStore(state => state.peerId);
-    const currentTurn = useEightBallStore(state => state.currentTurn);
+    const peerId = useEightBallStore((state) => state.peerId);
+    const currentTurn = useEightBallStore((state) => state.currentTurn);
 
     const showAimingTools = useMemo(() => {
-
         if (!game_id) {
             return true;
         } else {
             return peerId === currentTurn;
         }
+    }, [game_id, peerId, currentTurn]);
 
-    }, [game_id, peerId, currentTurn])
-
-    const toolsRef = useRef()
+    const toolsRef = useRef();
 
     const [isStopped, setIsStopped] = useState(false);
     const [cueAnim, setCueAnim] = useState(false);
@@ -44,24 +41,24 @@ export default function PlayerProjectile() {
         position: [0, 5, 25],
         onCollide: (e) => {
             if (e?.body?.userData?.isTableBottom) {
-                console.log("Ball hit table bottom")
-                resetBall()
+                console.log("Ball hit table bottom");
+                resetBall();
             }
-        }
-    }))
+        },
+    }));
 
     function resetBall() {
-        api.position.set(0, 5, 25)
-        api.velocity.set(0, 0, 0)
-        api.angularVelocity.set(0, 0, 0)
+        api.position.set(0, 5, 25);
+        api.velocity.set(0, 0, 0);
+        api.angularVelocity.set(0, 0, 0);
     }
 
-    const cueRotation = useEightBallStore(state => state.cueRotation);
-    const cuePower = useEightBallStore(state => state.cuePower);
-    const nudge = useEightBallStore(state => state.nudge);
-    const setNudge = useEightBallStore(state => state.setNudge);
+    const cueRotation = useEightBallStore((state) => state.cueRotation);
+    const cuePower = useEightBallStore((state) => state.cuePower);
+    const nudge = useEightBallStore((state) => state.nudge);
+    const setNudge = useEightBallStore((state) => state.setNudge);
 
-    const darkMode = useStore(state => state.darkMode);
+    const darkMode = useStore((state) => state.darkMode);
 
     // useEffect(() => {
     //     resetBall();
@@ -119,37 +116,31 @@ export default function PlayerProjectile() {
     });
 
     useEffect(() => {
-
         // Get the current position of the sphere from the physics API
         const unsubscribe = api.position.subscribe((position) => {
-
             if (position[1] < -10) {
-
-                resetBall()
-
+                resetBall();
             }
 
             if (toolsRef.current) {
                 toolsRef.current.position.set(...position);
             }
-
         });
 
         return unsubscribe;
-
     }, [api.position]);
 
     useEffect(() => {
         const unsubscribe = api?.velocity.subscribe((position) => {
-
             // console.log(position)
             setIsStopped(
-                (position[0] < 0.1 && position[0] > -0.1)
-                &&
-                (position[1] < 0.1 && position[1] > -0.1)
-                &&
-                (position[2] < 0.1 && position[2] > -0.1)
-            )
+                position[0] < 0.1 &&
+                    position[0] > -0.1 &&
+                    position[1] < 0.1 &&
+                    position[1] > -0.1 &&
+                    position[2] < 0.1 &&
+                    position[2] > -0.1,
+            );
             // toolsRef?.current?.velocity?.set(...position);
 
             // const [vx, vy, vz] = position;
@@ -165,9 +156,11 @@ export default function PlayerProjectile() {
 
     return (
         <group>
-
             {/* Ball */}
-            <mesh ref={ref} castShadow>
+            <mesh
+                ref={ref}
+                castShadow
+            >
                 <sphereGeometry args={[1, 10, 10]} />
                 <meshStandardMaterial
                     color={"white"}
@@ -184,87 +177,95 @@ export default function PlayerProjectile() {
             </mesh>
 
             {/* Aiming tools */}
-            {(showAimingTools || true) && <group ref={toolsRef} rotation={[0, degToRad(cueRotation), 0]}>
+            {(showAimingTools || true) && (
+                <group
+                    ref={toolsRef}
+                    rotation={[0, degToRad(cueRotation), 0]}
+                >
+                    {darkMode && (
+                        <pointLight
+                            position={[0, 0, 0]}
+                            intensity={100}
+                            distance={200}
+                            color="white"
+                            castShadow
+                        />
+                    )}
 
-                {darkMode &&
-                    <pointLight
-                        position={[0, 0, 0]}
-                        intensity={100}
-                        distance={200}
-                        color="white"
-                        castShadow
-                    />
-                }
-
-                {/* isStopped - cueAnim */}
-                {isStopped && (
-
-                    <>
-
-                        {/* Direction Arrow */}
-                        <mesh castShadow position={[0, 0, 2 + (cuePower / 4)]} rotation={[-Math.PI / 2, 0, 0]}>
-                            <cylinderGeometry
-                                args={[0.5, 0.5, (cuePower / 2)]}
-                            />
-                            <meshStandardMaterial
-                                color="red"
-                                transparent={true}
-                                opacity={0.5}
-                            />
-
+                    {/* isStopped - cueAnim */}
+                    {isStopped && (
+                        <>
+                            {/* Direction Arrow */}
                             <mesh
                                 castShadow
-                                position={[0, -(cuePower / 4), 0]}
-                                rotation={[0, 0, 0]}
+                                position={[0, 0, 2 + cuePower / 4]}
+                                rotation={[-Math.PI / 2, 0, 0]}
                             >
                                 <cylinderGeometry
-                                    args={[3, 0, 5]}
+                                    args={[0.5, 0.5, cuePower / 2]}
                                 />
                                 <meshStandardMaterial
                                     color="red"
                                     transparent={true}
                                     opacity={0.5}
                                 />
+
+                                <mesh
+                                    castShadow
+                                    position={[0, -(cuePower / 4), 0]}
+                                    rotation={[0, 0, 0]}
+                                >
+                                    <cylinderGeometry args={[3, 0, 5]} />
+                                    <meshStandardMaterial
+                                        color="red"
+                                        transparent={true}
+                                        opacity={0.5}
+                                    />
+                                </mesh>
                             </mesh>
 
-                        </mesh>
-
-                        <group>
-
-                            <Image
-                                url="/img/arrow.png"
-                                position={[-3, 0, 0]}
-                                scale={[3, 3, 3]}
-                                rotation={[degToRad(-90), degToRad(0), degToRad(-50)]}
-                                transparent={true}
-                            />
-
-                            <Image
-                                url="/img/arrow.png"
-                                position={[3, 0, 0]}
-                                scale={[3, 3, 3]}
-                                rotation={[degToRad(-90), degToRad(0), degToRad(90 + 50)]}
-                                transparent={true}
-                            />
-
-                        </group>
-
-                        {/* Cue Stick */}
-                        <group rotation={[0, degToRad(180), 0]}>
-                            <mesh ref={cueStickRef} castShadow position={[0, 0, 12]} rotation={[-Math.PI / 2, 0, 0]}>
-                                <cylinderGeometry
-                                    args={[0.25, 0.25, 20]}
+                            <group>
+                                <Image
+                                    url="/img/arrow.png"
+                                    position={[-3, 0, 0]}
+                                    scale={[3, 3, 3]}
+                                    rotation={[
+                                        degToRad(-90),
+                                        degToRad(0),
+                                        degToRad(-50),
+                                    ]}
+                                    transparent={true}
                                 />
-                                <meshStandardMaterial color="saddlebrown" />
-                            </mesh>
-                        </group>
 
-                    </>
-                )}
+                                <Image
+                                    url="/img/arrow.png"
+                                    position={[3, 0, 0]}
+                                    scale={[3, 3, 3]}
+                                    rotation={[
+                                        degToRad(-90),
+                                        degToRad(0),
+                                        degToRad(90 + 50),
+                                    ]}
+                                    transparent={true}
+                                />
+                            </group>
 
-            </group>}
-
+                            {/* Cue Stick */}
+                            <group rotation={[0, degToRad(180), 0]}>
+                                <mesh
+                                    ref={cueStickRef}
+                                    castShadow
+                                    position={[0, 0, 12]}
+                                    rotation={[-Math.PI / 2, 0, 0]}
+                                >
+                                    <cylinderGeometry args={[0.25, 0.25, 20]} />
+                                    <meshStandardMaterial color="saddlebrown" />
+                                </mesh>
+                            </group>
+                        </>
+                    )}
+                </group>
+            )}
         </group>
-    )
-
+    );
 }

@@ -1,227 +1,240 @@
-"use client"
+"use client";
 // import { dark } from '@mui/material/styles/createPalette'
-import { persist } from 'zustand/middleware'
+import { persist } from "zustand/middleware";
 // import { create } from 'zustand'
-import { createWithEqualityFn as create } from 'zustand/traditional'
+import { createWithEqualityFn as create } from "zustand/traditional";
 // import { nanoid } from 'nanoid'
 
 // const getLocalStorage = (key) => JSON.parse(window.localStorage.getItem(key))
 // const setLocalStorage = (key, value) => window.localStorage.setItem(key, JSON.stringify(value))
 
-export const useEightBallStore = create(persist((set) => ({
+export const useEightBallStore = create(
+    persist(
+        (set) => ({
+            debug: false,
+            setDebug: (newValue) => {
+                set((prev) => ({
+                    debug: newValue,
+                }));
+            },
 
-    debug: false,
-    setDebug: (newValue) => {
-        set((prev) => ({
-            debug: newValue
-        }))
-    },
+            resetPeer: false,
+            setResetPeer: (newValue) => {
+                set((prev) => ({
+                    resetPeer: newValue,
+                }));
+            },
 
-    resetPeer: false,
-    setResetPeer: (newValue) => {
-        set((prev) => ({
-            resetPeer: newValue
-        }))
-    },
+            // Mouse and Keyboard
+            // Touch
+            controlType: "Mouse and Keyboard",
+            setControlType: (newValue) => {
+                set((prev) => ({
+                    controlType: newValue,
+                }));
+            },
 
-    // Mouse and Keyboard
-    // Touch
-    controlType: "Mouse and Keyboard",
-    setControlType: (newValue) => {
-        set((prev) => ({
-            controlType: newValue
-        }))
-    },
+            touchControls: true,
+            setTouchControls: (newValue) => {
+                set((prev) => ({
+                    touchControls: newValue,
+                }));
+            },
 
-    touchControls: true,
-    setTouchControls: (newValue) => {
-        set((prev) => ({
-            touchControls: newValue
-        }))
-    },
+            music: false,
+            setMusic: (newValue) => {
+                set((prev) => ({
+                    music: newValue,
+                }));
+            },
 
-    music: false,
-    setMusic: (newValue) => {
-        set((prev) => ({
-            music: newValue
-        }))
-    },
+            cueRotation: 180,
+            setCueRotation: (newValue) => {
+                set((prev) => ({
+                    cueRotation: newValue,
+                }));
+            },
 
-    cueRotation: 180,
-    setCueRotation: (newValue) => {
-        set((prev) => ({
-            cueRotation: newValue
-        }))
-    },
+            cuePower: 50,
+            setCuePower: (newValue) => {
+                set((prev) => ({
+                    cuePower: newValue,
+                }));
+            },
 
-    cuePower: 50,
-    setCuePower: (newValue) => {
-        set((prev) => ({
-            cuePower: newValue
-        }))
-    },
+            nudge: false,
+            setNudge: (newValue) => {
+                set((prev) => ({
+                    nudge: newValue,
+                }));
+            },
 
-    nudge: false,
-    setNudge: (newValue) => {
-        set((prev) => ({
-            nudge: newValue
-        }))
-    },
+            // Only available on larger screens
+            showSidebar: true,
+            setShowSidebar: (newValue) => {
+                set((prev) => ({
+                    showSidebar: newValue,
+                }));
+            },
 
-    // Only available on larger screens
-    showSidebar: true,
-    setShowSidebar: (newValue) => {
-        set((prev) => ({
-            showSidebar: newValue
-        }))
-    },
+            resetCameraRequest: false,
+            setResetCameraRequest: (newValue) => {
+                set((prev) => ({
+                    resetCameraRequest: newValue,
+                }));
+            },
 
-    resetCameraRequest: false,
-    setResetCameraRequest: (newValue) => {
-        set((prev) => ({
-            resetCameraRequest: newValue
-        }))
-    },
+            ballPositions: [],
+            setBallPosition: (ballNumber, position, velocity, rotation) => {
+                set((prev) => {
+                    // return prev.ballPositions
 
-    ballPositions: [],
-    setBallPosition: (ballNumber, position, velocity, rotation) => {
-        set((prev) => {
+                    // ---
 
-            // return prev.ballPositions
+                    // let updatedPositions = [...prev.ballPositions];
 
-            // ---
+                    // let realIndex = updatedPositions.findIndex(pos => pos.ball === ballNumber);
 
-            // let updatedPositions = [...prev.ballPositions];
+                    // updatedPositions[realIndex] = {
+                    //     ball: ballNumber,
+                    //     position: [position.x, position.y, position.z],
+                    //     velocity: [velocity.x, velocity.y, velocity.z],
+                    //     rotation: [rotation.x, rotation.y, rotation.z]
+                    // };
+                    // return { ballPositions: updatedPositions };
 
-            // let realIndex = updatedPositions.findIndex(pos => pos.ball === ballNumber);
+                    // ---
 
-            // updatedPositions[realIndex] = {
-            //     ball: ballNumber,
-            //     position: [position.x, position.y, position.z],
-            //     velocity: [velocity.x, velocity.y, velocity.z],
-            //     rotation: [rotation.x, rotation.y, rotation.z]
-            // };
-            // return { ballPositions: updatedPositions };
+                    return {
+                        ballPositions: prev.ballPositions.map((pos) =>
+                            pos.ball === ballNumber
+                                ? {
+                                      ball: ballNumber,
+                                      position: [
+                                          position.x,
+                                          position.y,
+                                          position.z,
+                                      ],
+                                      velocity: [
+                                          velocity.x,
+                                          velocity.y,
+                                          velocity.z,
+                                      ],
+                                      rotation: [
+                                          rotation.x,
+                                          rotation.y,
+                                          rotation.z,
+                                      ],
+                                  }
+                                : pos,
+                        ),
+                    };
+                });
+            },
+            setBallPositions: (newValue) => {
+                set((prev) => ({
+                    ballPositions: newValue,
+                }));
+            },
+            ballPositionsUpdated: false,
+            setBallPositionsUpdated: (newValue) => {
+                set((prev) => ({
+                    ballPositionsUpdated: newValue,
+                }));
+            },
 
-            // ---
+            isHost: false,
+            setIsHost: (newValue) => {
+                set((prev) => ({
+                    isHost: newValue,
+                }));
+            },
 
-            return {
-                ballPositions: prev.ballPositions.map(pos =>
-                    pos.ball === ballNumber
-                        ? {
-                            ball: ballNumber,
-                            position: [position.x, position.y, position.z],
-                            velocity: [velocity.x, velocity.y, velocity.z],
-                            rotation: [rotation.x, rotation.y, rotation.z]
-                        }
-                        : pos
-                )
-            };
+            currentTurn: false,
+            setCurrentTurn: (newValue) => {
+                set((prev) => ({
+                    currentTurn: newValue,
+                }));
+            },
 
-        });
-    },
-    setBallPositions: (newValue) => {
-        set((prev) => ({
-            ballPositions: newValue
-        }))
-    },
-    ballPositionsUpdated: false,
-    setBallPositionsUpdated: (newValue) => {
-        set((prev) => ({
-            ballPositionsUpdated: newValue
-        }))
-    },
+            theme: null,
+            setTheme: (newValue) => {
+                set((prev) => ({
+                    theme: newValue,
+                }));
+            },
 
-    isHost: false,
-    setIsHost: (newValue) => {
-        set((prev) => ({
-            isHost: newValue
-        }))
-    },
+            darkMode: false,
+            setDarkMode: (newValue) => {
+                set((prev) => ({
+                    darkMode: newValue,
+                }));
+            },
+            toggleDarkMode: () => {
+                set((prev) => ({
+                    darkMode: !prev.darkMode,
+                }));
+            },
 
-    currentTurn: false,
-    setCurrentTurn: (newValue) => {
-        set((prev) => ({
-            currentTurn: newValue
-        }))
-    },
+            graphicsQuality: "High",
+            setGraphicsQuality: (newValue) => {
+                set((prev) => ({
+                    graphicsQuality: newValue,
+                }));
+            },
 
-    theme: null,
-    setTheme: (newValue) => {
-        set((prev) => ({
-            theme: newValue
-        }))
-    },
+            peerId: "",
+            setPeerId: (newValue) => {
+                set((prev) => ({
+                    peerId: newValue,
+                }));
+            },
 
-    darkMode: false,
-    setDarkMode: (newValue) => {
-        set((prev) => ({
-            darkMode: newValue
-        }))
-    },
-    toggleDarkMode: () => {
-        set((prev) => ({
-            darkMode: !prev.darkMode
-        }))
-    },
+            connectionPeerId: "",
+            setConnectionPeerId: (newValue) => {
+                set((prev) => ({
+                    connectionPeerId: newValue,
+                }));
+            },
 
-    graphicsQuality: 'High',
-    setGraphicsQuality: (newValue) => {
-        set((prev) => ({
-            graphicsQuality: newValue
-        }))
-    },
+            connected: false,
+            setConnected: (newValue) => {
+                set((prev) => ({
+                    connected: newValue,
+                }));
+            },
 
-    peerId: "",
-    setPeerId: (newValue) => {
-        set((prev) => ({
-            peerId: newValue
-        }))
-    },
+            players: [],
+            setPlayers: (newValue) => {
+                set((prev) => ({
+                    players: newValue,
+                }));
+            },
 
-    connectionPeerId: "",
-    setConnectionPeerId: (newValue) => {
-        set((prev) => ({
-            connectionPeerId: newValue
-        }))
-    },
+            lastLaunch: null,
+            setLastLaunch: (newValue) => {
+                set((prev) => ({
+                    lastLaunch: newValue,
+                }));
+            },
 
-    connected: false,
-    setConnected: (newValue) => {
-        set((prev) => ({
-            connected: newValue
-        }))
-    },
-
-    players: [],
-    setPlayers: (newValue) => {
-        set((prev) => ({
-            players: newValue
-        }))
-    },
-
-    lastLaunch: null,
-    setLastLaunch: (newValue) => {
-        set((prev) => ({
-            lastLaunch: newValue
-        }))
-    },
-
-    peerRef: { current: null },
-    connectionRef: { current: null },
-
-}), {
-    name: 'eight-ball-settings',
-    partialize: (state) => ({
-        debug: state.debug,
-        controlType: state.controlType,
-        touchControls: state.touchControls,
-        music: state.music,
-        // cueRotation: state.cueRotation,
-        // cuePower: state.cuePower,
-        showSidebar: state.showSidebar,
-        theme: state.theme,
-        darkMode: state.darkMode,
-        graphicsQuality: state.graphicsQuality,
-    })
-}))
+            peerRef: { current: null },
+            connectionRef: { current: null },
+        }),
+        {
+            name: "eight-ball-settings",
+            partialize: (state) => ({
+                debug: state.debug,
+                controlType: state.controlType,
+                touchControls: state.touchControls,
+                music: state.music,
+                // cueRotation: state.cueRotation,
+                // cuePower: state.cuePower,
+                showSidebar: state.showSidebar,
+                theme: state.theme,
+                darkMode: state.darkMode,
+                graphicsQuality: state.graphicsQuality,
+            }),
+        },
+    ),
+);

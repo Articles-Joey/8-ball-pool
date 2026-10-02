@@ -4,18 +4,27 @@ Command: npx gltfjsx@6.5.0 models\cardboardBoxOpen.glb --output output\cardboard
 Files: models\cardboardBoxOpen.glb [5.4KB] > E:\Downloads\kenney_furniture-kit\JSX\output\cardboardBoxOpen-transformed.glb [2.16KB] (60%)
 */
 
-import React from 'react'
-import { useGLTF } from '@react-three/drei'
+import React from "react";
+import { useGLTF } from "@react-three/drei";
 const link = `${process.env.NEXT_PUBLIC_CDN}games/Assets/KennyNL/Furniture/Models/cardboardBoxOpen-transformed.glb`;
 
 export function ModelKennyNLFurnitureCardboardBoxOpen(props) {
-  const { nodes, materials } = useGLTF(link)
-  return (
-    <group {...props} dispose={null}>
-      <mesh geometry={nodes.Mesh_cardboardBoxOpen.geometry} material={materials.wood} />
-      <mesh geometry={nodes.Mesh_cardboardBoxOpen_1.geometry} material={materials.woodDark} />
-    </group>
-  )
+    const { nodes, materials } = useGLTF(link);
+    return (
+        <group
+            {...props}
+            dispose={null}
+        >
+            <mesh
+                geometry={nodes.Mesh_cardboardBoxOpen.geometry}
+                material={materials.wood}
+            />
+            <mesh
+                geometry={nodes.Mesh_cardboardBoxOpen_1.geometry}
+                material={materials.woodDark}
+            />
+        </group>
+    );
 }
 
-useGLTF.preload(link)
+useGLTF.preload(link);

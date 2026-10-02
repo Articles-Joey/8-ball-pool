@@ -2,7 +2,7 @@
 
 ![Game Preview](/public/img/game-preview.webp)
 
-Same rules as traditional 8 ball pool. 
+Same rules as traditional 8 ball pool.
 
 ## Getting Started
 
@@ -23,6 +23,7 @@ In the scripts folder is reset_public and sync_to_s3. This is only for Articles 
 Play with other friends via peerjs multiplayer P2P sessions! Start a lobby of your own or enter a friends peer id to connect and take turns playing online.
 
 ## Attributions
+
 [8 Ball Icon](https://www.flaticon.com/free-icon/billiard-ball_469645)  
 [Floor Texture](https://www.flaticon.com/free-icons/billiard)  
 [Wall Texture](https://www.flaticon.com/free-icons/billiard)  

@@ -1,273 +1,274 @@
-import { useEffect, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import classNames from "classnames";
+"use client";
 
-import ArticlesButton from "@/components/UI/Button";
+import { useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
+import RotateRightIcon from "@mui/icons-material/RotateRight";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
+import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
+
+function useHeldControl(action, disabled) {
+    const intervalRef = useRef(null);
+    const stop = useCallback(() => {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+    }, []);
+    const start = useCallback(() => {
+        if (disabled || intervalRef.current !== null) return;
+        intervalRef.current = setInterval(action, 100);
+    }, [action, disabled]);
+
+    useEffect(() => {
+        if (disabled) stop();
+        return stop;
+    }, [disabled, stop]);
+    useEffect(() => {
+        window.addEventListener("blur", stop);
+        return () => window.removeEventListener("blur", stop);
+    }, [stop]);
+
+    return {
+        onPointerDown: (event) => {
+            if (event.button !== 0 || disabled) return;
+            event.currentTarget.setPointerCapture(event.pointerId);
+            start();
+        },
+        onPointerUp: stop,
+        onPointerCancel: stop,
+        onLostPointerCapture: stop,
+        onBlur: stop,
+        onKeyDown: (event) => {
+            if (event.key === " " || event.key === "Enter") {
+                event.preventDefault();
+                start();
+            }
+        },
+        onKeyUp: stop,
+    };
+}
+
+const floatingButtonSx = {
+    pointerEvents: "auto",
+    bgcolor: "white",
+    color: "black",
+    width: 50,
+    height: 50,
+    borderRadius: "50%",
+    opacity: 0.8,
+    touchAction: "none",
+    userSelect: "none",
+    transition: "opacity 200ms, scale 200ms",
+    "&:hover": { bgcolor: "white", opacity: 1, scale: "1.1" },
+    "&.Mui-disabled": {
+        bgcolor: "white",
+        color: "text.disabled",
+        opacity: 0.4,
+    },
+};
 
 export default function MenuBarControls() {
+    const searchParams = useSearchParams();
+    const gameId = searchParams.get("game_id");
+    const peerId = useEightBallStore((state) => state.peerId);
+    const currentTurn = useEightBallStore((state) => state.currentTurn);
+    const cueRotation = useEightBallStore((state) => state.cueRotation);
+    const cuePower = useEightBallStore((state) => state.cuePower);
+    const setNudge = useEightBallStore((state) => state.setNudge);
+    const touchControls = useEightBallStore((state) => state.touchControls);
+    const sidebar = useStore((state) => state.sidebar);
+    const screenshotMode = useStore((state) => state.screenshotMode);
+    const disabled =
+        screenshotMode || Boolean(gameId && peerId !== currentTurn);
 
-    let searchParams = useSearchParams()
-    let searchParamsObject = Object.fromEntries(searchParams.entries());
-    let { game_id } = searchParamsObject;
-
-    const peerId = useEightBallStore(state => state.peerId);
-    const currentTurn = useEightBallStore(state => state.currentTurn);
-
-    const disableAimingTools = useMemo(() => {
-
-        if (!game_id) {
-            return false;
-        } else {
-            return peerId !== currentTurn;
-        }
-
-    }, [game_id, peerId, currentTurn])
-
-    const cueRotation = useEightBallStore(state => state.cueRotation);
-    const setCueRotation = useEightBallStore(state => state.setCueRotation);
-    const cuePower = useEightBallStore(state => state.cuePower);
-    const setCuePower = useEightBallStore(state => state.setCuePower);
-    const setNudge = useEightBallStore(state => state.setNudge);
-    const touchControls = useEightBallStore(state => state.touchControls);
-
-    // const touchControlsEnabled = useEightBallStore(state => state.touchControlsEnabled);
-
-    const cuePowerRef = useRef(cuePower);
-    const cueRotationRef = useRef(cueRotation);
-
-    // Sync refs with the latest state
-    useEffect(() => {
-        cuePowerRef.current = cuePower;
-    }, [cuePower]);
-
-    useEffect(() => {
-        cueRotationRef.current = cueRotation;
-    }, [cueRotation]);
-
-    const useHandleCueRotationChange = (direction) => {
-        const intervalRef = useRef(null);
-
-        const startRotation = () => {
-
-            if (disableAimingTools) return;
-
-            intervalRef.current = setInterval(() => {
-                if (direction === "increase") {
-                    if (cueRotationRef.current >= 360) {
-                        setCueRotation(0);
-                    } else {
-                        setCueRotation(cueRotationRef.current + 1);
-                    }
-                } else {
-                    if (cueRotationRef.current <= 0) {
-                        setCueRotation(360);
-                    } else {
-                        setCueRotation(cueRotationRef.current - 1);
-                    }
-                }
-            }, 100); // Adjust interval as needed
-        };
-
-        const stopRotation = () => {
-            clearInterval(intervalRef.current);
-        };
-
-        return { startRotation, stopRotation };
+    const rotateLeft = useCallback(() => {
+        const state = useEightBallStore.getState();
+        state.setCueRotation(
+            state.cueRotation >= 360 ? 0 : state.cueRotation + 1,
+        );
+    }, []);
+    const rotateRight = useCallback(() => {
+        const state = useEightBallStore.getState();
+        state.setCueRotation(
+            state.cueRotation <= 0 ? 360 : state.cueRotation - 1,
+        );
+    }, []);
+    const increasePower = useCallback(() => {
+        const state = useEightBallStore.getState();
+        state.setCuePower(Math.min(100, state.cuePower + 1));
+    }, []);
+    const decreasePower = useCallback(() => {
+        const state = useEightBallStore.getState();
+        state.setCuePower(Math.max(0, state.cuePower - 1));
+    }, []);
+    const rotateLeftHandlers = useHeldControl(rotateLeft, disabled);
+    const rotateRightHandlers = useHeldControl(rotateRight, disabled);
+    const increasePowerHandlers = useHeldControl(increasePower, disabled);
+    const decreasePowerHandlers = useHeldControl(decreasePower, disabled);
+    const shoot = () => {
+        if (!disabled) setNudge(true);
     };
-
-    const increaseRotationHandlers = useHandleCueRotationChange("increase");
-    const decreaseRotationHandlers = useHandleCueRotationChange("decrease");
-
-    const useHandleCuePowerChange = (direction) => {
-        const intervalRef = useRef(null);
-
-        const startPowerChange = () => {
-
-            if (disableAimingTools) return;
-
-            intervalRef.current = setInterval(() => {
-                if (direction === "increase") {
-                    if (cuePowerRef.current < 100) {
-                        setCuePower(cuePowerRef.current + 1);
-                    }
-                } else {
-                    if (cuePowerRef.current > 0) {
-                        setCuePower(cuePowerRef.current - 1);
-                    }
-                }
-            }, 100); // Adjust interval as needed
-        };
-
-        const stopPowerChange = () => {
-            clearInterval(intervalRef.current);
-        };
-
-        return { startPowerChange, stopPowerChange };
+    const sidePosition = {
+        "@media (min-width: 992px)": { left: sidebar ? 300 : 0 },
     };
-
-    const increasePowerHandlers = useHandleCuePowerChange("increase");
-    const decreasePowerHandlers = useHandleCuePowerChange("decrease");
-
-    useEffect(() => {
-        // define a custom handler function
-        // for the contextmenu event
-        const handleContextMenu = (e) => {
-            // Block context menu when the event target is inside .floating-controls
-            const target = e.target;
-            if (target && typeof target.closest === 'function') {
-                if (target.closest('.floating-controls')) {
-                    // prevent the right-click menu from appearing inside floating controls
-                    e.preventDefault();
-                    return;
-                }
-                // optional: explicitly block elements with a specific attribute too
-                if (target.closest('[data-block-context]')) {
-                    e.preventDefault();
-                    return;
-                }
-            }
-            // allow default context menu elsewhere
-        }
-
-        // attach the event listener to the document object
-        document.addEventListener("contextmenu", handleContextMenu)
-
-        // clean up the event listener when the component unmounts
-        return () => {
-            document.removeEventListener("contextmenu", handleContextMenu)
-        }
-    }, [])
 
     return (
-        <div>
-
-            {touchControls &&
-                <div className="floating-controls">
-
-                    <div className="rotation">
-                        <div
-                            className={classNames("floating-button rotation-left", { "disabled": disableAimingTools })}
-                            onMouseDown={increaseRotationHandlers.startRotation}
-                            onMouseUp={increaseRotationHandlers.stopRotation}
-                            onTouchStart={increaseRotationHandlers.startRotation}
-                            onTouchEnd={increaseRotationHandlers.stopRotation}
-                        >
-                            <i className="fad fa-undo me-0"></i>
-                        </div>
-
-                        <div
-                            className={classNames("floating-button rotation-right", { "disabled": disableAimingTools })}
-                            onMouseDown={decreaseRotationHandlers.startRotation}
-                            onMouseUp={decreaseRotationHandlers.stopRotation}
-                            onTouchStart={decreaseRotationHandlers.startRotation}
-                            onTouchEnd={decreaseRotationHandlers.stopRotation}
-                        >
-                            <i className="fad fa-redo me-0"></i>
-                        </div>
-                    </div>
-
-                    <div
-                        className={classNames("floating-button launch", { "disabled": disableAimingTools })}
-                        onClick={() => {
-                            if (disableAimingTools) return;
-                            console.log("Launch")
-                            setNudge(true)
+        <Box
+            onContextMenu={(event) => event.preventDefault()}
+            sx={{ pointerEvents: "none" }}
+        >
+            {touchControls && (
+                <Box>
+                    <Box
+                        sx={{
+                            m: 2,
+                            bottom: 50,
+                            position: "fixed",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            display: "flex",
+                            justifyContent: "center",
+                            "@media (min-width: 992px)": {
+                                left: sidebar ? "calc(50% + 150px)" : "50%",
+                            },
                         }}
                     >
-                        <i className="fas text-danger fa-fire fa-2x me-0"></i>
-                    </div>
-
-                    <div
-                        className={classNames("floating-button increase-power", { "disabled": disableAimingTools })}
-                        onMouseDown={increasePowerHandlers.startPowerChange}
-                        onMouseUp={increasePowerHandlers.stopPowerChange}
-                        onTouchStart={increasePowerHandlers.startPowerChange}
-                        onTouchEnd={increasePowerHandlers.stopPowerChange}
+                        <IconButton
+                            aria-label="Rotate left"
+                            disabled={disabled}
+                            {...rotateLeftHandlers}
+                            sx={floatingButtonSx}
+                        >
+                            <RotateLeftIcon />
+                        </IconButton>
+                        <IconButton
+                            aria-label="Rotate right"
+                            disabled={disabled}
+                            {...rotateRightHandlers}
+                            sx={floatingButtonSx}
+                        >
+                            <RotateRightIcon />
+                        </IconButton>
+                    </Box>
+                    <IconButton
+                        aria-label="Shoot"
+                        disabled={disabled}
+                        onClick={shoot}
+                        sx={{
+                            ...floatingButtonSx,
+                            m: 2,
+                            bottom: 50,
+                            position: "fixed",
+                            right: 0,
+                            width: 75,
+                            height: 75,
+                        }}
                     >
-                        <i className="fad fa-chevron-double-up me-0"></i>
-                    </div>
-
-                    <div
-                        className={classNames("floating-button decrease-power", { "disabled": disableAimingTools })}
-                        onMouseDown={decreasePowerHandlers.startPowerChange}
-                        onMouseUp={decreasePowerHandlers.stopPowerChange}
-                        onTouchStart={decreasePowerHandlers.startPowerChange}
-                        onTouchEnd={decreasePowerHandlers.stopPowerChange}
+                        <LocalFireDepartmentIcon
+                            color="error"
+                            sx={{ fontSize: 32 }}
+                        />
+                    </IconButton>
+                    <IconButton
+                        aria-label="Increase power"
+                        disabled={disabled}
+                        {...increasePowerHandlers}
+                        sx={{
+                            ...floatingButtonSx,
+                            m: 2,
+                            bottom: 110,
+                            position: "fixed",
+                            left: 0,
+                            ...sidePosition,
+                        }}
                     >
-                        <i className="fad fa-chevron-double-down me-0"></i>
-                    </div>
-
-                </div>
-            }
-
-            <div>
-                <ArticlesButton
-                    small
-                    disabled={disableAimingTools}
-                    onMouseDown={increaseRotationHandlers.startRotation}
-                    onMouseUp={increaseRotationHandlers.stopRotation}
-                    onTouchStart={increaseRotationHandlers.startRotation}
-                    onTouchEnd={increaseRotationHandlers.stopRotation}
-                    style={{
-                        contextMenuOnRightClick: "none",
-                        userSelect: "none",
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
+                        <KeyboardDoubleArrowUpIcon />
+                    </IconButton>
+                    <IconButton
+                        aria-label="Decrease power"
+                        disabled={disabled}
+                        {...decreasePowerHandlers}
+                        sx={{
+                            ...floatingButtonSx,
+                            m: 2,
+                            bottom: 50,
+                            position: "fixed",
+                            left: 0,
+                            ...sidePosition,
+                        }}
+                    >
+                        <KeyboardDoubleArrowDownIcon />
+                    </IconButton>
+                </Box>
+            )}
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pointerEvents: "auto",
+                    width: "fit-content",
+                    bgcolor: "background.paper",
+                    "& button": { touchAction: "none", userSelect: "none" },
+                }}
+            >
+                <IconButton
+                    aria-label="Rotate left"
+                    size="small"
+                    disabled={disabled}
+                    {...rotateLeftHandlers}
                 >
-                    <i className="fad fa-undo me-0"></i>
-                </ArticlesButton>
-                <span className="badge bg-black">{cueRotation}</span>
-                <ArticlesButton
-                    small
-                    disabled={disableAimingTools}
-                    onMouseDown={decreaseRotationHandlers.startRotation}
-                    onMouseUp={decreaseRotationHandlers.stopRotation}
-                    onTouchStart={decreaseRotationHandlers.startRotation}
-                    onTouchEnd={decreaseRotationHandlers.stopRotation}
-                    style={{
-                        contextMenuOnRightClick: "none",
-                        userSelect: "none",
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
+                    <RotateLeftIcon />
+                </IconButton>
+                <Chip
+                    size="small"
+                    label={cueRotation}
+                    aria-label={`Rotation: ${cueRotation} degrees`}
+                    sx={{ bgcolor: "black", color: "white" }}
+                />
+                <IconButton
+                    aria-label="Rotate right"
+                    size="small"
+                    disabled={disabled}
+                    {...rotateRightHandlers}
                 >
-                    <i className="fad fa-redo me-0"></i>
-                </ArticlesButton>
-                <ArticlesButton
-                    small
-                    disabled={disableAimingTools}
-                    // active={}
-                    onClick={() => {
-                        setNudge(true)
-                    }}
+                    <RotateRightIcon />
+                </IconButton>
+                <IconButton
+                    aria-label="Shoot"
+                    size="small"
+                    disabled={disabled}
+                    onClick={shoot}
                 >
-                    <i className="fas text-danger fa-fire me-0"></i>
-                </ArticlesButton>
-                <ArticlesButton
-                    small
-                    disabled={disableAimingTools}
-                    // active={}
-                    onMouseDown={increasePowerHandlers.startPowerChange}
-                    onMouseUp={increasePowerHandlers.stopPowerChange}
-                    onTouchStart={increasePowerHandlers.startPowerChange}
-                    onTouchEnd={increasePowerHandlers.stopPowerChange}
+                    <LocalFireDepartmentIcon color="error" />
+                </IconButton>
+                <IconButton
+                    aria-label="Increase power"
+                    size="small"
+                    disabled={disabled}
+                    {...increasePowerHandlers}
                 >
-                    <i className="fad fa-chevron-double-up me-0"></i>
-                </ArticlesButton>
-                <span className="badge bg-black">{cuePower}</span>
-                <ArticlesButton
-                    small
-                    disabled={disableAimingTools}
-                    // active={}
-                    onMouseDown={decreasePowerHandlers.startPowerChange}
-                    onMouseUp={decreasePowerHandlers.stopPowerChange}
-                    onTouchStart={decreasePowerHandlers.startPowerChange}
-                    onTouchEnd={decreasePowerHandlers.stopPowerChange}
+                    <KeyboardDoubleArrowUpIcon />
+                </IconButton>
+                <Chip
+                    size="small"
+                    label={cuePower}
+                    aria-label={`Power: ${cuePower}`}
+                    sx={{ bgcolor: "black", color: "white" }}
+                />
+                <IconButton
+                    aria-label="Decrease power"
+                    size="small"
+                    disabled={disabled}
+                    {...decreasePowerHandlers}
                 >
-                    <i className="fad fa-chevron-double-down me-0"></i>
-                </ArticlesButton>
-            </div>
-
-        </div>
-    )
+                    <KeyboardDoubleArrowDownIcon />
+                </IconButton>
+            </Box>
+        </Box>
+    );
 }

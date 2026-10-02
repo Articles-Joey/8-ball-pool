@@ -1,12 +1,32 @@
-import { createContext, createRef, forwardRef, memo, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+    createContext,
+    createRef,
+    forwardRef,
+    memo,
+    Suspense,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
-import { Canvas, useFrame } from "@react-three/fiber"
-import { Sky, useDetectGPU, useTexture, OrbitControls, Cylinder, QuadraticBezierLine, Text, Image, Stats } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import {
+    Sky,
+    useDetectGPU,
+    useTexture,
+    OrbitControls,
+    Cylinder,
+    QuadraticBezierLine,
+    Text,
+    Image,
+    Stats,
+} from "@react-three/drei";
 
 // import { useCannonStore } from "@/components/Games/Cannon/hooks/useCannonStore";
 import { Debug, Physics, useBox, useSphere } from "@react-three/cannon";
-
-
 
 import { ModelJToastieCouch } from "@/components/Game/Couch";
 
@@ -44,39 +64,35 @@ import { useStore } from "@/hooks/useStore";
 import HallwayWalls from "./HallwayWalls";
 
 function GameCanvas(props) {
-
     // const theme = useEightBallStore(state => state.theme);
-    const darkMode = useStore(state => state.darkMode);
+    const darkMode = useStore((state) => state.darkMode);
     const showStats = useStore((state) => state?.debugConfig?.showStats);
 
-    const [isReady, setIsReady] = useState(false)
+    const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
-
         const timer = setTimeout(() => {
-            setIsReady(true)
-        }, 1000)
+            setIsReady(true);
+        }, 1000);
 
-        return () => clearTimeout(timer)
-
-    }, [])
+        return () => clearTimeout(timer);
+    }, []);
 
     // const GPUTier = useDetectGPU()
 
-    const [[a, b, c, d, e]] = useState(() => [...Array(5)].map(createRef))
+    const [[a, b, c, d, e]] = useState(() => [...Array(5)].map(createRef));
 
-    const {
-        debug,
-    } = useEightBallStore(state => ({
+    const { debug } = useEightBallStore((state) => ({
         debug: state.debug,
     }));
 
     return (
         <Canvas camera={{ position: [-10, 40, 40], fov: 50 }}>
-
-            {showStats && <>
-                <Stats className="stats-overlay" />
-            </>}
+            {showStats && (
+                <>
+                    <Stats className="stats-overlay" />
+                </>
+            )}
 
             <CameraControls />
 
@@ -87,15 +103,20 @@ function GameCanvas(props) {
             <Sky
                 // distance={450000}
                 sunPosition={[0, -10, 0]}
-            // inclination={0}
-            // azimuth={0.25}
-            // {...props} 
+                // inclination={0}
+                // azimuth={0.25}
+                // {...props}
             />
 
             <ambientLight intensity={darkMode ? 1 : 5} />
-            <spotLight intensity={darkMode ? 1 : 30000} position={[-50, 100, 50]} angle={5} penumbra={1} />
+            <spotLight
+                intensity={darkMode ? 1 : 30000}
+                position={[-50, 100, 50]}
+                angle={5}
+                penumbra={1}
+            />
 
-            {darkMode &&
+            {darkMode && (
                 <group position={[145, -10, 145]}>
                     {/* <spotLight
                         intensity={30000}
@@ -106,7 +127,7 @@ function GameCanvas(props) {
                     /> */}
                     <FlickerFireLight />
                 </group>
-            }
+            )}
 
             {/* <pointLight position={[-10, -10, -10]} /> */}
 
@@ -156,7 +177,7 @@ function GameCanvas(props) {
                 rotation={[0, -Math.PI / -2, 0]}
             />
 
-            {darkMode &&
+            {darkMode && (
                 <rectAreaLight
                     width={50}
                     height={50}
@@ -166,7 +187,7 @@ function GameCanvas(props) {
                     position={[-150, 0, 20]}
                     rotation={[0, degToRad(-90), 0]}
                 />
-            }
+            )}
 
             <ModelGoogleBookshelf
                 position={[-140, -30, 20]}
@@ -215,45 +236,48 @@ function GameCanvas(props) {
                     position={[149, 30, -10]}
                     alt="Ski Slope"
                 />
-                <mesh castShadow position={[149, 30, -60]}>
+                <mesh
+                    castShadow
+                    position={[149, 30, -60]}
+                >
                     <boxGeometry args={[5, 100, 5]} />
-                    <meshStandardMaterial
-                        color={"black"}
-                    />
+                    <meshStandardMaterial color={"black"} />
                 </mesh>
-                <mesh castShadow position={[149, 30, 40]}>
+                <mesh
+                    castShadow
+                    position={[149, 30, 40]}
+                >
                     <boxGeometry args={[5, 100, 5]} />
-                    <meshStandardMaterial
-                        color={"black"}
-                    />
+                    <meshStandardMaterial color={"black"} />
                 </mesh>
 
                 {/* Horizontal Bars */}
-                <mesh castShadow position={[149, -20, -10]}>
+                <mesh
+                    castShadow
+                    position={[149, -20, -10]}
+                >
                     <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial
-                        color={"black"}
-                    />
+                    <meshStandardMaterial color={"black"} />
                 </mesh>
-                <mesh castShadow position={[149, 30, -10]}>
+                <mesh
+                    castShadow
+                    position={[149, 30, -10]}
+                >
                     <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial
-                        color={"black"}
-                    />
+                    <meshStandardMaterial color={"black"} />
                 </mesh>
-                <mesh castShadow position={[149, 80, -10]}>
+                <mesh
+                    castShadow
+                    position={[149, 80, -10]}
+                >
                     <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial
-                        color={"black"}
-                    />
+                    <meshStandardMaterial color={"black"} />
                 </mesh>
             </group>
 
             {/* Tree */}
             <group position={[-120, -30, -120]}>
-                <Tree
-                    scale={4}
-                />
+                <Tree scale={4} />
                 <Star
                     position={[1, 97, -4]}
                     rotation={[0, 0, 0]}
@@ -275,26 +299,34 @@ function GameCanvas(props) {
 
             {/* Campfire */}
             <group position={[135, -30, 135]}>
-
                 <ModelGoogleCampFire
                     scale={0.3}
                     position={[0, 3, 0]}
                 />
 
                 {/* Base */}
-                <mesh castShadow position={[0, 1, 0]}>
+                <mesh
+                    castShadow
+                    position={[0, 1, 0]}
+                >
                     <boxGeometry args={[50, 5, 50]} />
                     <meshStandardMaterial color={"#222222"} />
                 </mesh>
 
                 {/* Top */}
-                <mesh castShadow position={[0, 40, 0]}>
+                <mesh
+                    castShadow
+                    position={[0, 40, 0]}
+                >
                     <boxGeometry args={[50, 5, 50]} />
                     <meshStandardMaterial color={"#222222"} />
                 </mesh>
 
                 {/* Walls */}
-                <mesh castShadow position={[20, 20, -20]}>
+                <mesh
+                    castShadow
+                    position={[20, 20, -20]}
+                >
                     <boxGeometry args={[50, 40, 5]} />
                     <meshStandardMaterial
                         color={"#222222"}
@@ -302,7 +334,10 @@ function GameCanvas(props) {
                         opacity={0.5}
                     />
                 </mesh>
-                <mesh castShadow position={[-20, 20, 20]}>
+                <mesh
+                    castShadow
+                    position={[-20, 20, 20]}
+                >
                     <boxGeometry args={[5, 40, 50]} />
                     <meshStandardMaterial
                         color={"#222222"}
@@ -312,27 +347,28 @@ function GameCanvas(props) {
                 </mesh>
 
                 {/* Chimney */}
-                <mesh castShadow position={[0, 110, 0]}>
+                <mesh
+                    castShadow
+                    position={[0, 110, 0]}
+                >
                     <boxGeometry args={[10, 140, 10]} />
                     <meshStandardMaterial color={"#222222"} />
                 </mesh>
-
             </group>
 
             <Dartboard />
 
             <Physics>
-
                 <Debug scale={debug ? 1 : 0}>
-                    {isReady &&
+                    {isReady && (
                         <>
                             {/* <Suspense> */}
-                                <KeyboardControls />
-                                <PlayerProjectile />
-                                <Balls />
+                            <KeyboardControls />
+                            <PlayerProjectile />
+                            <Balls />
                             {/* </Suspense> */}
                         </>
-                    }
+                    )}
 
                     <OuterWalls />
 
@@ -343,20 +379,16 @@ function GameCanvas(props) {
                     <Table />
                     <TableBottom />
                 </Debug>
-
             </Physics>
-
         </Canvas>
-    )
+    );
 }
 
-export default memo(GameCanvas)
+export default memo(GameCanvas);
 
 function Holes() {
-
     return (
         <group>
-
             {/* Top */}
             <Hole
                 position={[25, -0.79, -50]}
@@ -386,38 +418,35 @@ function Holes() {
                 position={[-25, -0.79, 50]}
                 args={[2, 2, 2.1]}
             />
-
         </group>
-    )
-
+    );
 }
 
 function Hole({ position, args }) {
-
     const [ref, api] = useBox(() => ({
         mass: 0,
-        type: 'Static',
+        type: "Static",
         args: args,
         position: position,
-    }))
+    }));
 
     return (
-        <mesh ref={ref} castShadow>
+        <mesh
+            ref={ref}
+            castShadow
+        >
             <cylinderGeometry args={args} />
             {/* <BeachBall /> */}
             <meshStandardMaterial color="black" />
         </mesh>
-    )
-
+    );
 }
 
 function OuterWalls() {
-
-    const lengthOffsetX = 29
+    const lengthOffsetX = 29;
 
     return (
         <group>
-
             {/* Length Walls */}
             <Wall
                 position={[lengthOffsetX, 1, 0]}
@@ -437,20 +466,16 @@ function OuterWalls() {
                 position={[0, 1, -54]}
                 args={[60, 2, 2]}
             />
-
         </group>
-    )
-
+    );
 }
 
 function InnerWalls() {
-
-    const wallWidth = 3
-    const lengthOffsetX = 26.5
+    const wallWidth = 3;
+    const lengthOffsetX = 26.5;
 
     return (
         <group>
-
             {/* North Length Walls */}
             <Wall
                 position={[lengthOffsetX, 1, -25]}
@@ -486,31 +511,31 @@ function InnerWalls() {
                 args={[46, 2, wallWidth]}
                 inner
             />
-
         </group>
-    )
-
+    );
 }
 
 function Wall({ position, args, inner }) {
-
     const [ref, api] = useBox(() => ({
         mass: 0,
-        type: 'Static',
+        type: "Static",
         args: args,
         position: position,
         material: { friction: 1, restitution: 1 },
-    }))
+    }));
 
     return (
-        <mesh ref={ref} castShadow>
+        <mesh
+            ref={ref}
+            castShadow
+        >
             <boxGeometry args={args} />
             {/* <BeachBall /> */}
             {/* <meshStandardMaterial color={inner ? "#054600" : "chocolate"} /> */}
             <meshStandardMaterial
                 color={inner ? "#054600" : "chocolate"}
                 emissive={"#054600"} // glow color
-                emissiveIntensity={0.90} // adjust for subtle glow
+                emissiveIntensity={0.9} // adjust for subtle glow
             />
             {/* <rectAreaLight
                 width={30}
@@ -522,6 +547,5 @@ function Wall({ position, args, inner }) {
                 rotation={[-Math.PI / 2, 0, 0]}
             /> */}
         </mesh>
-    )
-
+    );
 }

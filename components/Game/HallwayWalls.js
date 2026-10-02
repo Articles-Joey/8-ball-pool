@@ -1,17 +1,15 @@
 import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
 
-import * as THREE from 'three'
+import * as THREE from "three";
 import { degToRad } from "three/src/math/MathUtils";
 // import WoodFloor from "./WoodFloor";
 // import { useTexture } from "@react-three/drei";
 // import * as THREE from 'three'
 
 export default function RoomWalls() {
-
     return (
         <group position={[-200, 0, 0]}>
-
             <StoneBrickWall
                 rotation={[0, -Math.PI / 2, 0]}
                 position={[50, 0, 0]}
@@ -29,14 +27,12 @@ export default function RoomWalls() {
                 position={[0, -30, 0]}
                 args={[100, 600]}
             />
-
         </group>
-    )
+    );
 }
 
 function StoneBrickWall(props) {
-
-    const base_link = `textures/StoneBricks/`
+    const base_link = `textures/StoneBricks/`;
 
     const textures = useTexture({
         map: `${base_link}COL_1K.jpg`,
@@ -44,7 +40,7 @@ function StoneBrickWall(props) {
         normalMap: `${base_link}NRM_1K.jpg`,
         // roughnessMap: `${base_link}StoneBricksSplitface001_BUMP_1K.jpg`,
         // aoMap: `${base_link}StoneBricksSplitface001_AO_1K.jpg`,
-    })
+    });
 
     const texture = useMemo(() => {
         const cloned = { ...textures };
@@ -69,46 +65,48 @@ function StoneBrickWall(props) {
 
     return (
         <group {...props}>
-            <mesh receiveShadow rotation={planeRotation}>
+            <mesh
+                receiveShadow
+                rotation={planeRotation}
+            >
                 <planeGeometry {...props} />
                 <meshStandardMaterial {...texture} />
             </mesh>
 
-            <mesh position={[0, -55, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
+            <mesh
+                position={[0, -55, props.invertFace ? -0.5 : 0.5]}
+                rotation={planeRotation}
+            >
                 <planeGeometry args={[props.args[0], 20]} />
-                <meshStandardMaterial
-                    color={"saddlebrown"}
-                />
+                <meshStandardMaterial color={"saddlebrown"} />
             </mesh>
 
-            <mesh position={[0, 67.5, props.invertFace ? -0.5 : 0.5]} rotation={planeRotation}>
+            <mesh
+                position={[0, 67.5, props.invertFace ? -0.5 : 0.5]}
+                rotation={planeRotation}
+            >
                 <planeGeometry args={[props.args[0], 5]} />
-                <meshStandardMaterial
-                    color={"saddlebrown"}
-                />
+                <meshStandardMaterial color={"saddlebrown"} />
             </mesh>
 
             <mesh position={[0, -70, 0]}>
                 <boxGeometry args={[props.args[0], 10]} />
-                <meshStandardMaterial
-                    color={"black"}
-                />
+                <meshStandardMaterial color={"black"} />
             </mesh>
 
-            <mesh position={[0, 72.5, 0]} rotation={[0, degToRad(0), 0]}>
+            <mesh
+                position={[0, 72.5, 0]}
+                rotation={[0, degToRad(0), 0]}
+            >
                 <boxGeometry args={[props.args[0], 5]} />
-                <meshStandardMaterial
-                    color={"black"}
-                />
+                <meshStandardMaterial color={"black"} />
             </mesh>
         </group>
-    )
-
-};
+    );
+}
 
 function WoodFloor(props) {
-
-    const base_link = `${process.env.NEXT_PUBLIC_CDN}games/US Tycoon/Textures/WoodFloor041_1K-JPG/`
+    const base_link = `${process.env.NEXT_PUBLIC_CDN}games/US Tycoon/Textures/WoodFloor041_1K-JPG/`;
 
     const textures = useTexture({
         map: `${base_link}WoodFloor041_1K-JPG_Color.jpg`,
@@ -116,7 +114,7 @@ function WoodFloor(props) {
         // normalMap: `${base_link}GroundSand005_NRM_1K.jpg`,
         // roughnessMap: `${base_link}GroundSand005_BUMP_1K.jpg`,
         // aoMap: `${base_link}GroundSand005_AO_1K.jpg`,
-    })
+    });
 
     const texture = useMemo(() => {
         const cloned = { ...textures };
@@ -142,6 +140,5 @@ function WoodFloor(props) {
                 <meshStandardMaterial {...texture} />
             </mesh>
         </group>
-    )
-
-};
+    );
+}

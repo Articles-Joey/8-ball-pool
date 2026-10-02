@@ -1,8 +1,13 @@
-import React from "react";
+"use client";
+
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import StarIcon from "@mui/icons-material/Star";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ArticlesButton from "@/components/UI/Button";
 import { usePeer } from "@/hooks/usePeer";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
-
 export default function PeerDetails() {
     const {
         peerId,
@@ -21,165 +26,363 @@ export default function PeerDetails() {
         sendMessage,
         idPrefix,
     } = usePeer();
-
     const { peerRef, connectionRef } = useEightBallStore();
-
     return (
-        <div className="card card-articles card-sm">
-            <div className="card-body">
-                <div className="small text-muted">Session Controls</div>
+        <Box
+            sx={{
+                border: 1,
+                borderColor: "divider",
+                borderRadius: 1,
+                bgcolor: "background.paper",
+            }}
+        >
+            <Box
+                sx={{
+                    p: 1,
+                }}
+            >
+                <Box
+                    sx={{
+                        fontSize: "0.875rem",
+                        color: "text.secondary",
+                    }}
+                >
+                    Session Controls
+                </Box>
 
-                <div className='d-flex flex-column'>
-                    <div
-                        style={{
-                            fontSize: '0.7rem!important',
-                        }}
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <Box
                         onClick={() => {
                             console.log("peerId", peerId);
                             console.log("peer", peerRef.current);
-                            console.log("connectionRef.current", connectionRef.current);
+                            console.log(
+                                "connectionRef.current",
+                                connectionRef.current,
+                            );
+                        }}
+                        sx={{
+                            fontSize: "0.7rem",
                         }}
                     >
                         {peerId ? peerId : "None"}
-                    </div>
+                    </Box>
 
-                    <input
-                        autoComplete='off'
+                    <TextField
+                        label="Room code"
+                        size="small"
+                        autoComplete="off"
                         type="text"
-                        className='text-center w-100'
                         value={connectionPeerId}
-                        style={{
-                            fontSize: '0.7rem!important'
-                        }}
                         onChange={(e) => {
                             setConnectionPeerId(e.target.value);
                         }}
+                        sx={{
+                            width: "100%",
+                            "& input": {
+                                textAlign: "center",
+                                fontSize: "0.7rem",
+                            },
+                        }}
                     />
 
-                    <div>
+                    <Box>
                         {!connected ? (
                             <ArticlesButton
                                 size="sm"
-                                className="w-100"
                                 active={false}
                                 onClick={() => {
-                                    connectToPeer(`${idPrefix}${connectionPeerId}`);
+                                    connectToPeer(
+                                        `${idPrefix}${connectionPeerId}`,
+                                    );
+                                }}
+                                sx={{
+                                    width: "100%",
                                 }}
                             >
-                                <i className="fad fa-redo"></i>
+                                <RestartAltIcon
+                                    fontSize="inherit"
+                                    sx={{
+                                        mr: 0.5,
+                                    }}
+                                />
                                 Connect
                             </ArticlesButton>
                         ) : (
                             <ArticlesButton
                                 size="sm"
-                                className="w-100"
                                 active={false}
                                 onClick={disconnectPeer}
+                                sx={{
+                                    width: "100%",
+                                }}
                             >
-                                <i className="fad fa-redo"></i>
+                                <RestartAltIcon
+                                    fontSize="inherit"
+                                    sx={{
+                                        mr: 0.5,
+                                    }}
+                                />
                                 Disconnect
                             </ArticlesButton>
                         )}
 
                         <ArticlesButton
                             size="sm"
-                            className="w-50"
                             active={false}
                             onClick={() => {
                                 sendMessage();
                             }}
+                            sx={{
+                                width: "50%",
+                            }}
                         >
-                            <i className="fad fa-redo"></i>
+                            <RestartAltIcon
+                                fontSize="inherit"
+                                sx={{
+                                    mr: 0.5,
+                                }}
+                            />
                             Test Message
                         </ArticlesButton>
 
                         <ArticlesButton
                             size="sm"
-                            className="w-50"
                             active={false}
                             onClick={() => {
                                 setIsHost(!isHost);
                             }}
+                            sx={{
+                                width: "50%",
+                            }}
                         >
-                            <i className="fad fa-redo"></i>
-                            Host: {isHost ? 'True' : 'False'}
+                            <RestartAltIcon
+                                fontSize="inherit"
+                                sx={{
+                                    mr: 0.5,
+                                }}
+                            />
+                            Host: {isHost ? "True" : "False"}
                         </ArticlesButton>
 
-                        {/* Server-side state panel */}
-                        <div className="mt-2 border-top pt-2">
-                            <div className="small text-muted mb-1">Session State</div>
-                            <div style={{ fontSize: '0.7rem' }}>
-                                <div>Turn: <b>{currentTurn ? currentTurn.replace(idPrefix, '') : 'None'}</b>{currentTurn === peerId && ' (You)'}</div>
-                                <div>Host: <b>{isHost ? 'Yes' : 'No'}</b></div>
+                        <Box
+                            sx={{
+                                mt: 1,
+                                borderTop: 1,
+                                borderColor: "divider",
+                                pt: 1,
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    fontSize: "0.875rem",
+                                    color: "text.secondary",
+                                    mb: 0.5,
+                                }}
+                            >
+                                Session State
+                            </Box>
+                            <Box
+                                sx={{
+                                    fontSize: "0.7rem",
+                                }}
+                            >
+                                <Box>
+                                    Turn:{" "}
+                                    <b>
+                                        {currentTurn
+                                            ? currentTurn.replace(idPrefix, "")
+                                            : "None"}
+                                    </b>
+                                    {currentTurn === peerId && " (You)"}
+                                </Box>
+                                <Box>
+                                    Host: <b>{isHost ? "Yes" : "No"}</b>
+                                </Box>
                                 {lastLaunch ? (
                                     <>
-                                        <div>Last Power: <b>{lastLaunch.cuePower}</b></div>
-                                        <div>Last Rotation: <b>{lastLaunch.cueRotation}°</b></div>
-                                        <div>Last Shot: <b>{lastLaunch.time}</b></div>
+                                        <Box>
+                                            Last Power:{" "}
+                                            <b>{lastLaunch.cuePower}</b>
+                                        </Box>
+                                        <Box>
+                                            Last Rotation:{" "}
+                                            <b>{lastLaunch.cueRotation}°</b>
+                                        </Box>
+                                        <Box>
+                                            Last Shot: <b>{lastLaunch.time}</b>
+                                        </Box>
                                     </>
                                 ) : (
-                                    <div className="text-muted">No shots yet</div>
+                                    <Box
+                                        sx={{
+                                            color: "text.secondary",
+                                        }}
+                                    >
+                                        No shots yet
+                                    </Box>
                                 )}
-                            </div>
-                        </div>
+                            </Box>
+                        </Box>
 
-                        {/* Connections List */}
                         {players.length > 0 && (
-                            <div className="mt-2 border-top pt-2">
-                                <div className="small text-muted mb-1">Players ({players.length})</div>
+                            <Box
+                                sx={{
+                                    mt: 1,
+                                    borderTop: 1,
+                                    borderColor: "divider",
+                                    pt: 1,
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        fontSize: "0.875rem",
+                                        color: "text.secondary",
+                                        mb: 0.5,
+                                    }}
+                                >
+                                    Players ({players.length})
+                                </Box>
                                 {players.map((id) => (
-                                    <div key={id} className="d-flex flex-column mb-2 p-1 rounded">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div
-                                                className="text-truncate"
-                                                style={{
-                                                    fontSize: '0.7rem',
-                                                    flex: 1,
-                                                    fontWeight: currentTurn === id ? 'bold' : 'normal',
-                                                    color: currentTurn === id ? '#007bff' : 'inherit'
-                                                }}
+                                    <Box
+                                        key={id}
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            mb: 1,
+                                            p: 0.5,
+                                            borderRadius: 1,
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Box
                                                 title={id}
+                                                sx={{
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    whiteSpace: "nowrap",
+                                                    minWidth: 0,
+                                                    fontSize: "0.7rem",
+                                                    flex: 1,
+                                                    fontWeight:
+                                                        currentTurn === id
+                                                            ? "bold"
+                                                            : "normal",
+                                                    color:
+                                                        currentTurn === id
+                                                            ? "#007bff"
+                                                            : "inherit",
+                                                }}
                                             >
-                                                <i className={`fad ${currentTurn === id ? 'fa-star' : 'fa-user-circle'} me-1`}></i>
-                                                {id.replace(idPrefix, '')}
+                                                {currentTurn === id ? (
+                                                    <StarIcon
+                                                        fontSize="inherit"
+                                                        sx={{
+                                                            mr: 0.5,
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <AccountCircleIcon
+                                                        fontSize="inherit"
+                                                        sx={{
+                                                            mr: 0.5,
+                                                        }}
+                                                    />
+                                                )}
+                                                {id.replace(idPrefix, "")}
                                                 {id === peerId && " (You)"}
-                                            </div>
-                                            <div className="d-flex">
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                }}
+                                            >
                                                 {isHost && (
                                                     <>
                                                         <ArticlesButton
                                                             size="sm"
-                                                            variant={currentTurn === id ? "primary" : "outline-primary"}
-                                                            className="ms-1 py-0 px-2"
-                                                            style={{ height: '1.2rem', lineHeight: '1rem', fontSize: '0.6rem' }}
-                                                            onClick={() => changeTurn(id)}
+                                                            variant={
+                                                                currentTurn ===
+                                                                id
+                                                                    ? "primary"
+                                                                    : "outline-primary"
+                                                            }
+                                                            onClick={() =>
+                                                                changeTurn(id)
+                                                            }
+                                                            sx={{
+                                                                ml: 0.5,
+                                                                py: 0,
+                                                                px: 1,
+                                                                height: "1.2rem",
+                                                                lineHeight:
+                                                                    "1rem",
+                                                                fontSize:
+                                                                    "0.6rem",
+                                                            }}
                                                         >
                                                             Turn
                                                         </ArticlesButton>
                                                         <ArticlesButton
                                                             size="sm"
                                                             variant="danger"
-                                                            className="ms-1 py-0 px-2"
-                                                            style={{ height: '1.2rem', lineHeight: '1rem', fontSize: '0.6rem' }}
-                                                            onClick={() => kickUser(id)}
+                                                            onClick={() =>
+                                                                kickUser(id)
+                                                            }
+                                                            sx={{
+                                                                ml: 0.5,
+                                                                py: 0,
+                                                                px: 1,
+                                                                height: "1.2rem",
+                                                                lineHeight:
+                                                                    "1rem",
+                                                                fontSize:
+                                                                    "0.6rem",
+                                                            }}
                                                         >
                                                             Kick
                                                         </ArticlesButton>
                                                     </>
                                                 )}
-                                            </div>
-                                        </div>
-                                    </div>
+                                            </Box>
+                                        </Box>
+                                    </Box>
                                 ))}
-                                {/* Host themself mentioned or turn handled */}
-                                <div className="mt-1 small">
-                                    Current Turn: <b className="text-primary">{currentTurn ? currentTurn.replace(idPrefix, '') : "None"}</b> {currentTurn === peerId && "(You)"}
-                                </div>
-                            </div>
+
+                                <Box
+                                    sx={{
+                                        mt: 0.5,
+                                        fontSize: "0.875rem",
+                                    }}
+                                >
+                                    Current Turn:{" "}
+                                    <Box
+                                        component="b"
+                                        sx={{
+                                            color: "primary.main",
+                                        }}
+                                    >
+                                        {currentTurn
+                                            ? currentTurn.replace(idPrefix, "")
+                                            : "None"}
+                                    </Box>{" "}
+                                    {currentTurn === peerId && "(You)"}
+                                </Box>
+                            </Box>
                         )}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
     );
 }

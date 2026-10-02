@@ -1,493 +1,431 @@
-"use client"
-import {
-    useEffect,
-    useContext,
-    useState,
-    useRef
-} from 'react';
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Alert from "@mui/material/Alert";
+import TextField from "@mui/material/TextField";
+import PersonIcon from "@mui/icons-material/Person";
+import GroupsIcon from "@mui/icons-material/Groups";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import NicknameInput from "@articles-media/articles-dev-box/NicknameInput";
+import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup";
+import useUserDetails from "@articles-media/articles-dev-box/useUserDetails";
+import useUserToken from "@articles-media/articles-dev-box/useUserToken";
+import ArticlesButton from "@/components/UI/Button";
+import IsDev from "@/components/UI/IsDev";
+import { useStore } from "@/hooks/useStore";
+import { useSocketStore } from "@/hooks/useSocketStore";
 
-import { useStore } from '@/hooks/useStore';
-
-import ArticlesButton from '@/components/UI/Button';
-import IsDev from '@/components/UI/IsDev';
-import { useSocketStore } from '@/hooks/useSocketStore';
-import { useRouter } from 'next/navigation';
-
-import NicknameInput from '@articles-media/articles-dev-box/NicknameInput';
-import GameMenuPrimaryButtonGroup from '@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup';
-const Ad = dynamic(() =>
-    import('@articles-media/articles-dev-box/Ad'),
-    { ssr: false }
+const Ad = dynamic(() => import("@articles-media/articles-dev-box/Ad"), {
+    ssr: false,
+});
+const ReturnToLauncherButton = dynamic(
+    () => import("@articles-media/articles-dev-box/ReturnToLauncherButton"),
+    { ssr: false },
 );
-const ReturnToLauncherButton = dynamic(() =>
-    import('@articles-media/articles-dev-box/ReturnToLauncherButton'),
-    { ssr: false }
+const SessionButton = dynamic(
+    () => import("@articles-media/articles-dev-box/SessionButton"),
+    { ssr: false },
 );
-const SessionButton = dynamic(() =>
-    import('@articles-media/articles-dev-box/SessionButton'),
-    { ssr: false }
-);
-import { useUserDetails, useUserToken } from '@articles-media/articles-dev-box';
 
 export default function LandingPage() {
-
-    // const {
-    //     data: userToken,
-    //     error: userTokenError,
-    //     isLoading: userTokenLoading,
-    //     mutate: userTokenMutate
-    // } = useUserToken();
-
-    // const {
-    //     data: userDetails,
-    //     error: userDetailsError,
-    //     isLoading: userDetailsLoading,
-    //     mutate: userDetailsMutate
-    // } = useUserDetails({
-    //     token: userToken
-    // });
-
-    const {
-        data: userToken,
-        error: userTokenError,
-        isLoading: userTokenLoading,
-        mutate: userTokenMutate
-    } = useUserToken(
-        "3015"
+    const { data: userToken } = useUserToken(
+        process.env.NEXT_PUBLIC_GAME_PORT || "3015",
     );
-
-    const {
-        data: userDetails,
-        error: userDetailsError,
-        isLoading: userDetailsLoading,
-        mutate: userDetailsMutate
-    } = useUserDetails({
-        token: userToken
-    });
-
-    const {
-        socket,
-    } = useSocketStore(state => ({
-        socket: state.socket,
-    }));
-
+    const { data: userDetails, isLoading: userDetailsLoading } = useUserDetails(
+        { token: userToken },
+    );
+    const socket = useSocketStore((state) => state.socket);
     const router = useRouter();
-
-    // const userReduxState = useSelector((state) => state.auth.user_details)
-    const userReduxState = false
-
-    const darkMode = useStore(state => state.darkMode)
-
-    const nickname = useStore(state => state.nickname)
-    const setNickname = useStore(state => state.setNickname)
-    const randomNickname = useStore(state => state.randomNickname)
-
-    const [prepareMultiplayer, setPrepareMultiplayer] = useState(false)
-
-    const _hasHydrated = useStore(state => state._hasHydrated)
-    const toggleDarkMode = useStore(state => state.toggleDarkMode);
-
-    const setShowInfoModal = useStore(state => state.setShowInfoModal);
-    const setShowSettingsModal = useStore(state => state.setShowSettingsModal);
-    const setShowCreditsModal = useStore(state => state.setShowCreditsModal);
-
-    const lobbyDetails = useStore(state => state.lobbyDetails);
-    const setLobbyDetails = useStore(state => state.setLobbyDetails);
+    const darkMode = useStore((state) => state.darkMode);
+    const lobbyDetails = useStore((state) => state.lobbyDetails);
+    const setLobbyDetails = useStore((state) => state.setLobbyDetails);
+    const [prepareMultiplayer, setPrepareMultiplayer] = useState(false);
 
     useEffect(() => {
-
-        socket.on('game:8-ball-pool-landing-details', function (msg) {
-            console.log('game:8-ball-pool-landing-details', msg)
-
-            if (JSON.stringify(msg) !== JSON.stringify(lobbyDetails)) {
-                setLobbyDetails(msg)
+        const updateLobby = (details) => {
+            if (
+                JSON.stringify(details) !==
+                JSON.stringify(useStore.getState().lobbyDetails)
+            ) {
+                setLobbyDetails(details);
             }
-        });
-
-        return () => {
-            socket.off('game:8-ball-pool-landing-details');
         };
-
-    }, [])
+        socket.on("game:8-ball-pool-landing-details", updateLobby);
+        return () =>
+            socket.off("game:8-ball-pool-landing-details", updateLobby);
+    }, [socket, setLobbyDetails]);
 
     useEffect(() => {
-
-        if (socket.connected) {
-            socket.emit('join-room', 'game:8-ball-pool-landing');
-        }
-
-        return function cleanup() {
-            socket.emit('leave-room', 'game:8-ball-pool-landing')
+        const joinLobby = () =>
+            socket.emit("join-room", "game:8-ball-pool-landing");
+        if (socket.connected) joinLobby();
+        socket.on("connect", joinLobby);
+        return () => {
+            socket.off("connect", joinLobby);
+            socket.emit("leave-room", "game:8-ball-pool-landing");
         };
-
-    }, [socket.connected]);
+    }, [socket]);
 
     function attemptConnection() {
-
-        // First try and establish connection via peerjs before redirecting page
-
-        const params = new URLSearchParams();
-        params.set(
-            "game_id", 
-            `articles-media-8-ball-pool-${prepareMultiplayer.room_code}`
-        );
+        const params = new URLSearchParams({
+            game_id: `articles-media-8-ball-pool-${prepareMultiplayer.room_code}`,
+        });
         router.push(`/play?${params.toString()}`);
-
     }
 
     return (
-
-        <div className="landing-page">
-
-            <div className='background-wrap'>
-                <Image
+        <Box
+            sx={{
+                flexGrow: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "100vh",
+            }}
+        >
+            <Box sx={{ position: "fixed", inset: 0, zIndex: -1 }}>
+                <Box
+                    component={Image}
                     src={`${process.env.NEXT_PUBLIC_CDN}games/8 Ball Pool/8-ball-pool-lobby-background.jpg`}
                     alt=""
                     fill
-                    style={{ objectFit: 'cover', objectPosition: 'center', filter: 'blur(10px)' }}
+                    sx={(theme) => ({
+                        objectFit: "cover",
+                        objectPosition: "center",
+                        filter:
+                            theme.palette.mode === "dark"
+                                ? "blur(5px) brightness(0.5)"
+                                : "blur(10px)",
+                    })}
                 />
-            </div>
-
-            <div className="container d-flex flex-column-reverse flex-lg-row justify-content-center align-items-center py-3">
-
-                <div
-                    style={{ "width": "20rem" }}
-                >
-
-                    <div style={{ position: 'relative', height: '200px' }}>
-                        <Image
-                            src={"/img/logo.webp"}
-                            alt=""
+            </Box>
+            <Box
+                sx={{
+                    width: "100%",
+                    maxWidth: 1320,
+                    mx: "auto",
+                    px: 1.5,
+                    py: 2,
+                    display: "flex",
+                    flexDirection: "column-reverse",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "@media (min-width: 992px)": { flexDirection: "row" },
+                }}
+            >
+                <Box sx={{ width: "20rem", maxWidth: "100%" }}>
+                    <Box sx={{ position: "relative", height: 200 }}>
+                        <Box
+                            component={Image}
+                            src="/img/logo.webp"
+                            alt="8 Ball Pool"
                             fill
-                            style={{ objectFit: 'cover' }}
+                            sx={{ objectFit: "cover" }}
                         />
-                    </div>
-
-                    <div
-                        className="card card-articles card-sm mb-3"
+                    </Box>
+                    <Paper
+                        variant="outlined"
+                        sx={{ mb: 2, borderRadius: 1, overflow: "hidden" }}
                     >
-
-                        <div className='card-header d-flex align-items-center'>
-
-                            <NicknameInput
-                                useStore={useStore}
-                            />
-
-                        </div>
-
-                        <div className="card-body">
-
-                            {prepareMultiplayer == false &&
+                        <Box
+                            sx={{
+                                p: 1,
+                                borderBottom: 1,
+                                borderColor: "divider",
+                                display: "flex",
+                                alignItems: "center",
+                            }}
+                        >
+                            <NicknameInput useStore={useStore} />
+                        </Box>
+                        <Box sx={{ p: 1 }}>
+                            {prepareMultiplayer === false ? (
                                 <>
-                                    <Link
-                                        href={{
-                                            pathname: `/play`,
-                                            // query: {
-                                            //     server: id
-                                            // }
-                                        }}
-                                    >
-                                        <ArticlesButton className="w-100 mb-3">
-                                            <i className="fad fa-user me-2"></i>
-                                            Play Single Player
-                                        </ArticlesButton>
-                                    </Link>
-
-
                                     <ArticlesButton
-                                        className="w-100 mb-1"
-                                        onClick={() => {
-                                            setPrepareMultiplayer({})
-                                        }}
+                                        component={Link}
+                                        href="/play"
+                                        fullWidth
+                                        sx={{ mb: 2 }}
+                                        startIcon={<PersonIcon />}
                                     >
-                                        <i className="fas fa-users me-2"></i>
+                                        Play Single Player
+                                    </ArticlesButton>
+                                    <ArticlesButton
+                                        fullWidth
+                                        sx={{ mb: 0.5 }}
+                                        startIcon={<GroupsIcon />}
+                                        onClick={() =>
+                                            setPrepareMultiplayer({})
+                                        }
+                                    >
                                         Play Multiplayer
                                     </ArticlesButton>
                                 </>
-                            }
-
-                            {prepareMultiplayer !== false &&
+                            ) : (
                                 <>
-
-                                    {/* <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
-                                        Generate room code
-                                    </div>
-    
-                                    <input
-                                        autoComplete='off'
-                                        // id={item_key}
-                                        type="text"
-                                        className='text-center w-100'
-                                        // autoFocus={autoFocus && true}
-                                        // onBlur={onBlur}
-                                        // placeholder={placeholder}
-                                        value={nickname}
-                                        // onKeyDown={onKeyDown}
-                                        onChange={(e) => {
-                                            setNickname(e.target.value)
-                                        }}
-                                    />
-    
-                                    <div className='mt-1 mb-3' style={{ fontSize: '0.8rem' }}>
-                                        Generate room code
-                                    </div> */}
-
-                                    {prepareMultiplayer.room_code == undefined &&
-                                        <div className='w-100 mb-0'>
+                                    {prepareMultiplayer.room_code ===
+                                    undefined ? (
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                width: "100%",
+                                            }}
+                                        >
                                             <ArticlesButton
-                                                className="w-50"
-                                                onClick={() => {
-                                                    const params = new URLSearchParams();
-                                                    params.set("game_id", "loading");
-                                                    router.push(`/play?${params.toString()}`);
-                                                }}
+                                                sx={{ width: "50%" }}
+                                                onClick={() =>
+                                                    router.push(
+                                                        "/play?game_id=loading",
+                                                    )
+                                                }
                                             >
                                                 Start a Game
                                             </ArticlesButton>
-
                                             <ArticlesButton
-                                                className="w-50"
-                                                onClick={() => {
+                                                sx={{ width: "50%" }}
+                                                onClick={() =>
                                                     setPrepareMultiplayer({
-                                                        room_code: ''
+                                                        room_code: "",
                                                     })
-                                                }}
+                                                }
                                             >
                                                 Join a Game
                                             </ArticlesButton>
-                                        </div>
-                                    }
-
-                                    {prepareMultiplayer.room_code !== undefined &&
-                                        <div>
-
-                                            <div className="alert alert-danger py-1 mb-2">
+                                        </Box>
+                                    ) : (
+                                        <Box>
+                                            <Alert
+                                                severity="error"
+                                                sx={{ py: 0.5, mb: 1 }}
+                                            >
                                                 Invalid room code
-                                            </div>
-
-                                            <input
-                                                value={prepareMultiplayer.room_code}
-                                                className='w-100'
-                                                placeholder='Room code'
-                                                onChange={(e) => {
+                                            </Alert>
+                                            <TextField
+                                                label="Room code"
+                                                value={
+                                                    prepareMultiplayer.room_code
+                                                }
+                                                fullWidth
+                                                size="small"
+                                                onChange={(event) =>
                                                     setPrepareMultiplayer({
                                                         ...prepareMultiplayer,
-                                                        room_code: e.target.value
+                                                        room_code:
+                                                            event.target.value,
                                                     })
-                                                }}
-                                            >
-                                            </input>
-
-                                        </div>
-
-                                    }
-
-                                    <div className="d-flex justify-content-center align-items-center w-100 mt-3">
-
-                                        <ArticlesButton
-                                            className=""
-                                            variant='link'
-                                            onClick={() => {
-                                                prepareMultiplayer.room_code !== undefined ?
-                                                    setPrepareMultiplayer({})
-                                                    :
-                                                    setPrepareMultiplayer(false)
-                                            }}
-                                        >
-                                            <i className="fad fa-arrow-left me-2"></i>
-                                            Back
-                                        </ArticlesButton>
-
-                                        <span className="mx-2">|</span>
-
-                                        <ArticlesButton
-                                            className=""
-                                            variant='link'
-                                            disabled={
-                                                prepareMultiplayer.room_code?.length < 4
-                                                ||
-                                                !prepareMultiplayer.room_code
-                                            }
-                                            onClick={() => {
-                                                attemptConnection()
-                                            }}
-                                        >
-                                            Enter
-                                            <i className="fad fa-arrow-right ms-2"></i>
-                                        </ArticlesButton>
-
-                                    </div>
-                                </>
-                            }
-
-                            <div className="fw-bold mb-1 small text-center d-none">
-                                {lobbyDetails.players.length || 0} player{lobbyDetails.players.length > 1 && 's'} in the lobby.
-                            </div>
-
-                            {/* <div className='small fw-bold'>Public Servers</div> */}
-
-                            <div className="servers d-none">
-
-                                {[1, 2, 3, 4].map(id => {
-
-                                    let lobbyLookup = lobbyDetails?.fourFrogsGlobalState?.games?.find(lobby =>
-                                        parseInt(lobby.server_id) == id
-                                    )
-
-                                    return (
-                                        <div key={id} className="server">
-
-                                            <div className='d-flex justify-content-between align-items-center w-100 mb-2'>
-                                                <div className="mb-0" style={{ fontSize: '0.9rem' }}><b>Server {id}</b></div>
-                                                <div className='mb-0'>{lobbyLookup?.players?.length || 0}/2</div>
-                                            </div>
-
-                                            <div className='d-flex justify-content-start w-100 mb-1'>
-                                                {[1, 2].map(player_count => {
-
-                                                    let playerLookup = false
-
-                                                    if (lobbyLookup?.players?.length >= player_count) playerLookup = true
-
-                                                    return (
-                                                        <div key={player_count} className="icon" style={{
-                                                            width: '20px',
-                                                            height: '20px',
-                                                            ...(playerLookup ? {
-                                                                backgroundColor: 'black',
-                                                            } : {
-                                                                backgroundColor: 'gray',
-                                                            }),
-                                                            border: '1px solid black'
-                                                        }}>
-
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-
-                                            <Link
-                                                className={``}
-                                                href={{
-                                                    pathname: `/play`,
-                                                    query: {
-                                                        server: id
-                                                    }
-                                                }}
-                                            >
-                                                <ArticlesButton
-                                                    className="px-5"
-                                                    small
-                                                >
-                                                    Join
-                                                </ArticlesButton>
-                                            </Link>
-
-                                        </div>
-                                    )
-                                })}
-
-                            </div>
-
-                            {/* <div className='small fw-bold  mt-3 mb-1'>Or</div> */}
-
-                            {/* <div className='d-flex'>
-    
-                                <ArticlesButton
-                                    className={`w-50`}
-                                    onClick={() => {
-                                        // TODO
-                                        alert("Coming Soon!")
-                                    }}
-                                >
-                                    <i className="fad fa-robot"></i>
-                                    Practice
-                                </ArticlesButton>
-    
-                                <ArticlesButton
-                                    className={`w-50`}
-                                    onClick={() => {
-                                        setShowPrivateGameModal(prev => !prev)
-                                    }}
-                                >
-                                    <i className="fad fa-lock"></i>
-                                    Private Game
-                                </ArticlesButton>
-    
-                            </div> */}
-
-                            <IsDev className={'mt-3'}>
-                                <div>
-                                    <ArticlesButton
-                                        className="w-50"
-                                        variant='warning'
-                                        onClick={() => {
-                                            socket.emit('game:four-frogs:reset', '');
+                                                }
+                                            />
+                                        </Box>
+                                    )}
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            width: "100%",
+                                            mt: 2,
                                         }}
                                     >
-                                        Reset Server
-                                    </ArticlesButton>
-                                </div>
+                                        <ArticlesButton
+                                            variant="link"
+                                            startIcon={<ArrowBackIcon />}
+                                            onClick={() =>
+                                                setPrepareMultiplayer(
+                                                    prepareMultiplayer.room_code !==
+                                                        undefined
+                                                        ? {}
+                                                        : false,
+                                                )
+                                            }
+                                        >
+                                            Back
+                                        </ArticlesButton>
+                                        <Box
+                                            component="span"
+                                            sx={{ mx: 1 }}
+                                        >
+                                            |
+                                        </Box>
+                                        <ArticlesButton
+                                            variant="link"
+                                            endIcon={<ArrowForwardIcon />}
+                                            disabled={
+                                                !prepareMultiplayer.room_code ||
+                                                prepareMultiplayer.room_code
+                                                    .length < 4
+                                            }
+                                            onClick={attemptConnection}
+                                        >
+                                            Enter
+                                        </ArticlesButton>
+                                    </Box>
+                                </>
+                            )}
+                            <Box
+                                sx={{
+                                    fontWeight: "bold",
+                                    mb: 0.5,
+                                    fontSize: "0.875rem",
+                                    textAlign: "center",
+                                    display: "none",
+                                }}
+                            >
+                                {lobbyDetails.players.length || 0} player
+                                {lobbyDetails.players.length > 1 && "s"} in the
+                                lobby.
+                            </Box>
+                            <Box
+                                sx={{
+                                    display: "none",
+                                    gap: "5px",
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                }}
+                            >
+                                {[1, 2, 3, 4].map((id) => {
+                                    const lobby =
+                                        lobbyDetails?.fourFrogsGlobalState?.games?.find(
+                                            (item) =>
+                                                parseInt(item.server_id) === id,
+                                        );
+                                    return (
+                                        <Box
+                                            key={id}
+                                            sx={{
+                                                p: 1,
+                                                border: 1,
+                                                borderColor: "divider",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    justifyContent:
+                                                        "space-between",
+                                                    alignItems: "center",
+                                                    width: "100%",
+                                                    mb: 1,
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        fontSize: "0.9rem",
+                                                        fontWeight: "bold",
+                                                    }}
+                                                >
+                                                    Server {id}
+                                                </Box>
+                                                <Box>
+                                                    {lobby?.players?.length ||
+                                                        0}
+                                                    /2
+                                                </Box>
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    width: "100%",
+                                                    mb: 0.5,
+                                                }}
+                                            >
+                                                {[1, 2].map((player) => (
+                                                    <Box
+                                                        key={player}
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                            bgcolor:
+                                                                lobby?.players
+                                                                    ?.length >=
+                                                                player
+                                                                    ? "black"
+                                                                    : "gray",
+                                                            border: "1px solid black",
+                                                        }}
+                                                    />
+                                                ))}
+                                            </Box>
+                                            <ArticlesButton
+                                                component={Link}
+                                                href={{
+                                                    pathname: "/play",
+                                                    query: { server: id },
+                                                }}
+                                                sx={{ px: 6 }}
+                                                small
+                                            >
+                                                Join
+                                            </ArticlesButton>
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                            <IsDev sx={{ mt: 2 }}>
+                                <ArticlesButton
+                                    sx={{ width: "50%" }}
+                                    variant="warning"
+                                    onClick={() =>
+                                        socket.emit("game:four-frogs:reset", "")
+                                    }
+                                >
+                                    Reset Server
+                                </ArticlesButton>
                             </IsDev>
-
-                        </div>
-
-                        <div className="card-footer d-flex flex-wrap justify-content-center">
-
+                        </Box>
+                        <Box
+                            sx={{
+                                p: 1,
+                                borderTop: 1,
+                                borderColor: "divider",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                            }}
+                        >
                             <GameMenuPrimaryButtonGroup
                                 useStore={useStore}
                                 type="Landing"
                             />
-
-                        </div>
-
-                    </div>
-
+                        </Box>
+                    </Paper>
                     <SessionButton
                         port={process.env.NEXT_PUBLIC_GAME_PORT}
-                        friendsButton={true}
+                        friendsButton
                     />
-
                     <ReturnToLauncherButton />
-
-                </div>
-
-                {/* <GameScoreboard
-                    game={process.env.NEXT_PUBLIC_GAME_NAME}
-                    style="Default"
-                    darkMode={darkMode ? true : false}
-                    prepend={
-                        <>
-                            <div
-                                style={{
-                                    width: '100%',
-                                    height: '200px',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <RotatingMascot />
-                            </div>
-                        </>
-                    }
-                /> */}
-
-                <Ad
-                    style="Default"
-                    section={"Games"}
-                    section_id={process.env.NEXT_PUBLIC_GAME_NAME}
-                    darkMode={darkMode ? true : false}
-                    user_ad_token={userToken}
-                    userDetails={userDetails}
-                    userDetailsLoading={userDetailsLoading}
-                />
-
-            </div>
-        </div>
+                </Box>
+                <Box
+                    sx={{
+                        mt: 2,
+                        "@media (min-width: 992px)": {
+                            mt: 0,
+                            position: "absolute",
+                            right: "1rem",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                        },
+                    }}
+                >
+                    <Ad
+                        style="Default"
+                        section="Games"
+                        section_id={process.env.NEXT_PUBLIC_GAME_NAME}
+                        darkMode={Boolean(darkMode)}
+                        user_ad_token={userToken}
+                        userDetails={userDetails}
+                        userDetailsLoading={userDetailsLoading}
+                    />
+                </Box>
+            </Box>
+        </Box>
     );
 }

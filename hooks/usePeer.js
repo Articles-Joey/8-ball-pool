@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Peer from 'peerjs';
+import Peer from "peerjs";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useSearchParams } from "next/navigation";
 
@@ -10,12 +10,18 @@ export function usePeer() {
     const idPrefix = "articles-media-8-ball-pool-";
 
     const {
-        peerId, setPeerId,
-        connected, setConnected,
-        connectionPeerId, setConnectionPeerId,
-        players, setPlayers,
-        lastLaunch, setLastLaunch,
-        isHost, setIsHost,
+        peerId,
+        setPeerId,
+        connected,
+        setConnected,
+        connectionPeerId,
+        setConnectionPeerId,
+        players,
+        setPlayers,
+        lastLaunch,
+        setLastLaunch,
+        isHost,
+        setIsHost,
         setCurrentTurn,
         setBallPositions,
         setBallPositionsUpdated,
@@ -41,54 +47,77 @@ export function usePeer() {
                 const newPeer = new Peer(id, { debug: 2 });
                 peerRef.current = newPeer;
 
-                newPeer.on('open', (id) => {
+                newPeer.on("open", (id) => {
                     setPeerId(id);
                     console.log(`My peer ID is: ${id}`);
                     setPlayers([...new Set([...players, id])]);
 
-                    if (searchParamsObject.game_id === "loading" || searchParamsObject.game_id === id.replace(idPrefix, '')) {
+                    if (
+                        searchParamsObject.game_id === "loading" ||
+                        searchParamsObject.game_id === id.replace(idPrefix, "")
+                    ) {
                         const url = new URL(window.location.href);
-                        url.searchParams.set('game_id', id.replace(idPrefix, ''));
-                        window.history.replaceState({}, '', url);
+                        url.searchParams.set(
+                            "game_id",
+                            id.replace(idPrefix, ""),
+                        );
+                        window.history.replaceState({}, "", url);
                         if (searchParamsObject.game_id !== "loading") {
                             setIsHost(true);
                         }
                     }
                 });
 
-                newPeer.on('connection', function (conn) {
+                newPeer.on("connection", function (conn) {
                     console.log("A connection was made?");
                     setConnected(true);
-                    setPlayers([...new Set([...useEightBallStore.getState().players, conn.peer])]);
+                    setPlayers([
+                        ...new Set([
+                            ...useEightBallStore.getState().players,
+                            conn.peer,
+                        ]),
+                    ]);
 
                     setTimeout(() => {
                         conn.send({
                             type: "Turn Change",
-                            turn: useEightBallStore.getState().currentTurn
+                            turn: useEightBallStore.getState().currentTurn,
                         });
                         conn.send({
                             type: "Ball Sync",
-                            ballPositions: useEightBallStore.getState().ballPositions
+                            ballPositions:
+                                useEightBallStore.getState().ballPositions,
                         });
                     }, 500);
 
-                    conn.on('data', (data) => {
-                        console.log('Received data:', data);
-                        if (data.type === "Ball Positions" || data.type === "Ball Sync") {
+                    conn.on("data", (data) => {
+                        console.log("Received data:", data);
+                        if (
+                            data.type === "Ball Positions" ||
+                            data.type === "Ball Sync"
+                        ) {
                             setBallPositions(data.ballPositions);
                             setBallPositionsUpdated(data.ballPositions);
                         }
                         if (data.type === "Adjustment Event") {
-                            const currentTurnState = useEightBallStore.getState().currentTurn;
+                            const currentTurnState =
+                                useEightBallStore.getState().currentTurn;
                             if (currentTurnState === conn.peer) {
                                 setCuePower(data.cuePower);
                                 setCueRotation(data.cueRotation);
 
                                 // Host broadcasts to all other clients
-                                if (peerRef.current && peerRef.current.connections) {
-                                    Object.keys(peerRef.current.connections).forEach(pid => {
+                                if (
+                                    peerRef.current &&
+                                    peerRef.current.connections
+                                ) {
+                                    Object.keys(
+                                        peerRef.current.connections,
+                                    ).forEach((pid) => {
                                         if (pid !== conn.peer) {
-                                            peerRef.current.connections[pid].forEach(c => {
+                                            peerRef.current.connections[
+                                                pid
+                                            ].forEach((c) => {
                                                 if (c.open) c.send(data);
                                             });
                                         }
@@ -97,19 +126,41 @@ export function usePeer() {
                             }
                         }
                         if (data.type === "Launch Event") {
-                            const currentTurnState = useEightBallStore.getState().currentTurn;
-                            if (currentTurnState && currentTurnState !== conn.peer) {
-                                console.log("Ignoring Launch Event - not this player's turn");
+                            const currentTurnState =
+                                useEightBallStore.getState().currentTurn;
+                            if (
+                                currentTurnState &&
+                                currentTurnState !== conn.peer
+                            ) {
+                                console.log(
+                                    "Ignoring Launch Event - not this player's turn",
+                                );
                             } else {
                                 setCuePower(data.cuePower);
                                 setCueRotation(data.cueRotation);
                                 setNudge(true);
-                                setLastLaunch({ cuePower: data.cuePower, cueRotation: data.cueRotation, time: new Date().toLocaleTimeString() });
-                                if (peerRef.current && peerRef.current.connections) {
-                                    Object.keys(peerRef.current.connections).forEach(pid => {
+                                setLastLaunch({
+                                    cuePower: data.cuePower,
+                                    cueRotation: data.cueRotation,
+                                    time: new Date().toLocaleTimeString(),
+                                });
+                                if (
+                                    peerRef.current &&
+                                    peerRef.current.connections
+                                ) {
+                                    Object.keys(
+                                        peerRef.current.connections,
+                                    ).forEach((pid) => {
                                         if (pid !== conn.peer) {
-                                            peerRef.current.connections[pid].forEach(c => {
-                                                c.send({ type: "Launch Event", cuePower: data.cuePower, cueRotation: data.cueRotation });
+                                            peerRef.current.connections[
+                                                pid
+                                            ].forEach((c) => {
+                                                c.send({
+                                                    type: "Launch Event",
+                                                    cuePower: data.cuePower,
+                                                    cueRotation:
+                                                        data.cueRotation,
+                                                });
                                             });
                                         }
                                     });
@@ -127,25 +178,36 @@ export function usePeer() {
                         }
                     });
 
-                    conn.on('close', () => {
-                        const newPlayers = useEightBallStore.getState().players.filter(p => p !== conn.peer);
+                    conn.on("close", () => {
+                        const newPlayers = useEightBallStore
+                            .getState()
+                            .players.filter((p) => p !== conn.peer);
                         setPlayers(newPlayers);
                         if (newPlayers.length === 0) setConnected(false);
                     });
                 });
 
-                newPeer.on('error', (err) => {
-                    console.error('Peer error:', err);
-                    if (err.type === 'unavailable-id' && searchParamsObject.game_id && searchParamsObject.game_id !== "loading") {
+                newPeer.on("error", (err) => {
+                    console.error("Peer error:", err);
+                    if (
+                        err.type === "unavailable-id" &&
+                        searchParamsObject.game_id &&
+                        searchParamsObject.game_id !== "loading"
+                    ) {
                         newPeer.destroy();
-                        const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
+                        const randomFourDigit = Math.floor(
+                            1000 + Math.random() * 9000,
+                        );
                         initPeer(`${idPrefix}${randomFourDigit}`);
                     }
                 });
             };
 
             let desiredId;
-            if (searchParamsObject.game_id && searchParamsObject.game_id !== "loading") {
+            if (
+                searchParamsObject.game_id &&
+                searchParamsObject.game_id !== "loading"
+            ) {
                 desiredId = `${idPrefix}${searchParamsObject.game_id}`;
             } else {
                 const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
@@ -164,7 +226,12 @@ export function usePeer() {
         if (manuallyDisconnectedRef.current) return;
         if (searchParamsObject.game_id === "loading") {
             setIsHost(true);
-        } else if (peerId && !connected && !isHost && searchParamsObject.game_id) {
+        } else if (
+            peerId &&
+            !connected &&
+            !isHost &&
+            searchParamsObject.game_id
+        ) {
             connectToPeer(`${idPrefix}${searchParamsObject.game_id}`);
         }
     }, [peerId, connected, isHost, searchParamsObject.game_id]);
@@ -172,12 +239,18 @@ export function usePeer() {
     function connectToPeer(id) {
         if (!peerRef.current) return;
         const connection = peerRef.current.connect(id);
-        connection.on('open', () => {
+        connection.on("open", () => {
             connectionRef.current = connection;
-            connectionRef.current.send({ type: "Connection", date: new Date(), peerId });
+            connectionRef.current.send({
+                type: "Connection",
+                date: new Date(),
+                peerId,
+            });
             setConnected(true);
-            setPlayers([...new Set([...useEightBallStore.getState().players, id])]);
-            connectionRef.current.on('data', (data) => {
+            setPlayers([
+                ...new Set([...useEightBallStore.getState().players, id]),
+            ]);
+            connectionRef.current.on("data", (data) => {
                 if (data.type === "Kick") disconnectPeer();
                 if (data.type === "Turn Change") setCurrentTurn(data.turn);
                 if (data.type === "Adjustment Event") {
@@ -192,12 +265,18 @@ export function usePeer() {
                     setCuePower(data.cuePower);
                     setCueRotation(data.cueRotation);
                     setNudge(true);
-                    setLastLaunch({ cuePower: data.cuePower, cueRotation: data.cueRotation, time: new Date().toLocaleTimeString() });
+                    setLastLaunch({
+                        cuePower: data.cuePower,
+                        cueRotation: data.cueRotation,
+                        time: new Date().toLocaleTimeString(),
+                    });
                 }
             });
         });
-        connection.on('close', () => {
-            const newPlayers = useEightBallStore.getState().players.filter(p => p !== id);
+        connection.on("close", () => {
+            const newPlayers = useEightBallStore
+                .getState()
+                .players.filter((p) => p !== id);
             setPlayers(newPlayers);
             if (newPlayers.length === 0) setConnected(false);
         });
@@ -219,12 +298,12 @@ export function usePeer() {
     function kickUser(id) {
         if (!isHost || !peerRef.current) return;
         if (peerRef.current.connections[id]) {
-            peerRef.current.connections[id].forEach(conn => {
+            peerRef.current.connections[id].forEach((conn) => {
                 conn.send({ type: "Kick" });
                 setTimeout(() => conn.close(), 100);
             });
         }
-        setPlayers(players.filter(p => p !== id));
+        setPlayers(players.filter((p) => p !== id));
     }
 
     function changeTurn(id) {
@@ -232,8 +311,8 @@ export function usePeer() {
         setCurrentTurn(id);
         const ballPositions = useEightBallStore.getState().ballPositions;
         if (peerRef.current && peerRef.current.connections) {
-            Object.keys(peerRef.current.connections).forEach(pid => {
-                peerRef.current.connections[pid].forEach(conn => {
+            Object.keys(peerRef.current.connections).forEach((pid) => {
+                peerRef.current.connections[pid].forEach((conn) => {
                     conn.send({ type: "Turn Change", turn: id });
                     conn.send({ type: "Ball Sync", ballPositions });
                 });
@@ -249,7 +328,7 @@ export function usePeer() {
                 peerId,
                 ballPositions: useEightBallStore.getState().ballPositions,
                 cuePower,
-                cueRotation
+                cueRotation,
             });
         }
     }
@@ -261,19 +340,33 @@ export function usePeer() {
             const currentTurnState = useEightBallStore.getState().currentTurn;
             if (!currentTurnState || currentTurnState === peerId) {
                 const launchCuePower = useEightBallStore.getState().cuePower;
-                const launchCueRotation = useEightBallStore.getState().cueRotation;
-                setLastLaunch({ cuePower: launchCuePower, cueRotation: launchCueRotation, time: new Date().toLocaleTimeString() });
-                
+                const launchCueRotation =
+                    useEightBallStore.getState().cueRotation;
+                setLastLaunch({
+                    cuePower: launchCuePower,
+                    cueRotation: launchCueRotation,
+                    time: new Date().toLocaleTimeString(),
+                });
+
                 // Broadcast
                 if (peerRef.current && peerRef.current.connections) {
-                    Object.keys(peerRef.current.connections).forEach(pid => {
-                        peerRef.current.connections[pid].forEach(conn => {
-                            if (conn.open) conn.send({ type: "Launch Event", cuePower: launchCuePower, cueRotation: launchCueRotation });
+                    Object.keys(peerRef.current.connections).forEach((pid) => {
+                        peerRef.current.connections[pid].forEach((conn) => {
+                            if (conn.open)
+                                conn.send({
+                                    type: "Launch Event",
+                                    cuePower: launchCuePower,
+                                    cueRotation: launchCueRotation,
+                                });
                         });
                     });
                 }
                 if (connectionRef.current && connectionRef.current.open) {
-                    connectionRef.current.send({ type: "Launch Event", cuePower: launchCuePower, cueRotation: launchCueRotation });
+                    connectionRef.current.send({
+                        type: "Launch Event",
+                        cuePower: launchCuePower,
+                        cueRotation: launchCueRotation,
+                    });
                 }
             }
         }
@@ -289,13 +382,13 @@ export function usePeer() {
             const data = {
                 type: "Adjustment Event",
                 cuePower,
-                cueRotation
+                cueRotation,
             };
 
             // If I am host, broadcast to everyone
             if (isHost && peerRef.current && peerRef.current.connections) {
-                Object.keys(peerRef.current.connections).forEach(pid => {
-                    peerRef.current.connections[pid].forEach(conn => {
+                Object.keys(peerRef.current.connections).forEach((pid) => {
+                    peerRef.current.connections[pid].forEach((conn) => {
                         if (conn.open) conn.send(data);
                     });
                 });
@@ -322,6 +415,6 @@ export function usePeer() {
         kickUser,
         lastLaunch,
         sendMessage,
-        idPrefix
+        idPrefix,
     };
 }
