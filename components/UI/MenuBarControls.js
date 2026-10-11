@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
+import ArticlesButton from "./Button";
+import gameTextSx from "./gameTextSx";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
@@ -12,6 +12,7 @@ import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useStore } from "@/hooks/useStore";
+import { canAim, canShoot } from "@/util/poolGame";
 
 function useHeldControl(action, disabled) {
     const intervalRef = useRef(null);
@@ -55,36 +56,35 @@ function useHeldControl(action, disabled) {
 
 const floatingButtonSx = {
     pointerEvents: "auto",
-    bgcolor: "white",
-    color: "black",
+    bgcolor: "background.paper",
     width: 50,
     height: 50,
     borderRadius: "50%",
-    opacity: 0.8,
+    p: 1,
     touchAction: "none",
     userSelect: "none",
     transition: "opacity 200ms, scale 200ms",
-    "&:hover": { bgcolor: "white", opacity: 1, scale: "1.1" },
+    "&:hover, &:hover:not(.active)": {
+        bgcolor: "background.paper",
+        scale: "1.1",
+    },
     "&.Mui-disabled": {
-        bgcolor: "white",
-        color: "text.disabled",
-        opacity: 0.4,
+        bgcolor: "background.paper",
+        borderStyle: "dashed",
     },
 };
 
 export default function MenuBarControls() {
-    const searchParams = useSearchParams();
-    const gameId = searchParams.get("game_id");
-    const peerId = useEightBallStore((state) => state.peerId);
-    const currentTurn = useEightBallStore((state) => state.currentTurn);
+    const aimingAllowed = useEightBallStore(canAim);
+    const shootingAllowed = useEightBallStore(canShoot);
     const cueRotation = useEightBallStore((state) => state.cueRotation);
     const cuePower = useEightBallStore((state) => state.cuePower);
     const setNudge = useEightBallStore((state) => state.setNudge);
     const touchControls = useEightBallStore((state) => state.touchControls);
     const sidebar = useStore((state) => state.sidebar);
     const screenshotMode = useStore((state) => state.screenshotMode);
-    const disabled =
-        screenshotMode || Boolean(gameId && peerId !== currentTurn);
+    const disabled = screenshotMode || !aimingAllowed;
+    const shootDisabled = screenshotMode || !shootingAllowed;
 
     const rotateLeft = useCallback(() => {
         const state = useEightBallStore.getState();
@@ -111,7 +111,7 @@ export default function MenuBarControls() {
     const increasePowerHandlers = useHeldControl(increasePower, disabled);
     const decreasePowerHandlers = useHeldControl(decreasePower, disabled);
     const shoot = () => {
-        if (!disabled) setNudge(true);
+        if (!shootDisabled) setNudge(true);
     };
     const sidePosition = {
         "@media (min-width: 992px)": { left: sidebar ? 300 : 0 },
@@ -138,26 +138,26 @@ export default function MenuBarControls() {
                             },
                         }}
                     >
-                        <IconButton
+                        <ArticlesButton
                             aria-label="Rotate left"
                             disabled={disabled}
                             {...rotateLeftHandlers}
                             sx={floatingButtonSx}
                         >
                             <RotateLeftIcon />
-                        </IconButton>
-                        <IconButton
+                        </ArticlesButton>
+                        <ArticlesButton
                             aria-label="Rotate right"
                             disabled={disabled}
                             {...rotateRightHandlers}
                             sx={floatingButtonSx}
                         >
                             <RotateRightIcon />
-                        </IconButton>
+                        </ArticlesButton>
                     </Box>
-                    <IconButton
+                    <ArticlesButton
                         aria-label="Shoot"
-                        disabled={disabled}
+                        disabled={shootDisabled}
                         onClick={shoot}
                         sx={{
                             ...floatingButtonSx,
@@ -173,8 +173,8 @@ export default function MenuBarControls() {
                             color="error"
                             sx={{ fontSize: 32 }}
                         />
-                    </IconButton>
-                    <IconButton
+                    </ArticlesButton>
+                    <ArticlesButton
                         aria-label="Increase power"
                         disabled={disabled}
                         {...increasePowerHandlers}
@@ -188,8 +188,8 @@ export default function MenuBarControls() {
                         }}
                     >
                         <KeyboardDoubleArrowUpIcon />
-                    </IconButton>
-                    <IconButton
+                    </ArticlesButton>
+                    <ArticlesButton
                         aria-label="Decrease power"
                         disabled={disabled}
                         {...decreasePowerHandlers}
@@ -203,71 +203,75 @@ export default function MenuBarControls() {
                         }}
                     >
                         <KeyboardDoubleArrowDownIcon />
-                    </IconButton>
+                    </ArticlesButton>
                 </Box>
             )}
             <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    pointerEvents: "auto",
-                    width: "fit-content",
-                    bgcolor: "background.paper",
-                    "& button": { touchAction: "none", userSelect: "none" },
-                }}
+                sx={[
+                    gameTextSx,
+                    {
+                        display: "flex",
+                        alignItems: "center",
+                        pointerEvents: "auto",
+                        width: "fit-content",
+                        bgcolor: "background.paper",
+                        "& button": { touchAction: "none", userSelect: "none" },
+                        "& .MuiButton-root": { p: 1 },
+                    },
+                ]}
             >
-                <IconButton
+                <ArticlesButton
                     aria-label="Rotate left"
                     size="small"
                     disabled={disabled}
                     {...rotateLeftHandlers}
                 >
                     <RotateLeftIcon />
-                </IconButton>
+                </ArticlesButton>
                 <Chip
                     size="small"
                     label={cueRotation}
                     aria-label={`Rotation: ${cueRotation} degrees`}
-                    sx={{ bgcolor: "black", color: "white" }}
+                    sx={{ bgcolor: "background.paper" }}
                 />
-                <IconButton
+                <ArticlesButton
                     aria-label="Rotate right"
                     size="small"
                     disabled={disabled}
                     {...rotateRightHandlers}
                 >
                     <RotateRightIcon />
-                </IconButton>
-                <IconButton
+                </ArticlesButton>
+                <ArticlesButton
                     aria-label="Shoot"
                     size="small"
-                    disabled={disabled}
+                    disabled={shootDisabled}
                     onClick={shoot}
                 >
                     <LocalFireDepartmentIcon color="error" />
-                </IconButton>
-                <IconButton
+                </ArticlesButton>
+                <ArticlesButton
                     aria-label="Increase power"
                     size="small"
                     disabled={disabled}
                     {...increasePowerHandlers}
                 >
                     <KeyboardDoubleArrowUpIcon />
-                </IconButton>
+                </ArticlesButton>
                 <Chip
                     size="small"
                     label={cuePower}
                     aria-label={`Power: ${cuePower}`}
-                    sx={{ bgcolor: "black", color: "white" }}
+                    sx={{ bgcolor: "background.paper" }}
                 />
-                <IconButton
+                <ArticlesButton
                     aria-label="Decrease power"
                     size="small"
                     disabled={disabled}
                     {...decreasePowerHandlers}
                 >
                     <KeyboardDoubleArrowDownIcon />
-                </IconButton>
+                </ArticlesButton>
             </Box>
         </Box>
     );

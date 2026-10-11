@@ -8,15 +8,20 @@ import LeftPanelContent from "@/components/UI/LeftPanel";
 import TouchControls from "@/components/UI/TouchControls";
 import { useStore } from "@/hooks/useStore";
 import useTouchControlsStore from "@/hooks/useTouchControlsStore";
+import { usePeer } from "@/hooks/usePeer";
+import GameStatus from "@/components/UI/GameStatus";
+import WinnerModal from "@/components/UI/WinnerModal";
 
 const GameCanvas = dynamic(() => import("@/components/Game/GameCanvas"), {
     ssr: false,
 });
 
 export default function GamePage() {
+    usePeer();
     const showMenu = useStore((state) => state.showMenu);
     const sceneKey = useStore((state) => state.sceneKey);
     const sidebar = useStore((state) => state.sidebar);
+    const screenshotMode = useStore((state) => state.screenshotMode);
     const touchControlsEnabled = useTouchControlsStore(
         (state) => state.enabled,
     );
@@ -58,6 +63,22 @@ export default function GamePage() {
             >
                 {touchControlsEnabled && <TouchControls />}
                 <GameCanvas key={sceneKey} />
+                {!screenshotMode && (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 60,
+                            right: 12,
+                            width: { xs: 245, sm: 290 },
+                            maxHeight: "calc(100vh - 240px)",
+                            overflowY: "auto",
+                            zIndex: 3,
+                        }}
+                    >
+                        <GameStatus />
+                    </Box>
+                )}
+                <WinnerModal />
             </Box>
         </Box>
     );

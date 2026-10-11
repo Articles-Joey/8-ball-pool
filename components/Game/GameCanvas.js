@@ -1,32 +1,9 @@
-import {
-    createContext,
-    createRef,
-    forwardRef,
-    memo,
-    Suspense,
-    useContext,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { memo, Suspense, useEffect, useState } from "react";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import {
-    Sky,
-    useDetectGPU,
-    useTexture,
-    OrbitControls,
-    Cylinder,
-    QuadraticBezierLine,
-    Text,
-    Image,
-    Stats,
-} from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { Sky, Image, Stats } from "@react-three/drei";
 
-// import { useCannonStore } from "@/components/Games/Cannon/hooks/useCannonStore";
-import { Debug, Physics, useBox, useSphere } from "@react-three/cannon";
+import { Physics } from "@react-three/rapier";
 
 import { ModelJToastieCouch } from "@/components/Game/Couch";
 
@@ -62,8 +39,17 @@ import RoomWalls from "@/components/Game/RoomWalls";
 import { degToRad } from "three/src/math/MathUtils";
 import { useStore } from "@/hooks/useStore";
 import HallwayWalls from "./HallwayWalls";
+import {
+    CueBallPlacement,
+    PoolPhysicsController,
+    PoolPhysicsProvider,
+} from "./PoolPhysics";
 
-function GameCanvas(props) {
+function GameCanvas({ landingAnimationMode = false }) {
+    const guest = useEightBallStore(
+        (s) => s.mode === "multiplayer" && !s.isHost,
+    );
+    const finished = useEightBallStore((s) => s.phase === "finished");
     // const theme = useEightBallStore(state => state.theme);
     const darkMode = useStore((state) => state.darkMode);
     const showStats = useStore((state) => state?.debugConfig?.showStats);
@@ -79,8 +65,6 @@ function GameCanvas(props) {
     }, []);
 
     // const GPUTier = useDetectGPU()
-
-    const [[a, b, c, d, e]] = useState(() => [...Array(5)].map(createRef));
 
     const { debug } = useEightBallStore((state) => ({
         debug: state.debug,
@@ -358,194 +342,35 @@ function GameCanvas(props) {
 
             <Dartboard />
 
-            <Physics>
-                <Debug scale={debug ? 1 : 0}>
-                    {isReady && (
-                        <>
-                            {/* <Suspense> */}
-                            <KeyboardControls />
-                            <PlayerProjectile />
-                            <Balls />
-                            {/* </Suspense> */}
-                        </>
-                    )}
-
-                    <OuterWalls />
-
-                    <InnerWalls />
-
-                    {/* <Holes /> */}
-
-                    <Table />
-                    <TableBottom />
-                </Debug>
-            </Physics>
+            <Suspense fallback={null}>
+                <Physics
+                    debug={debug}
+                    gravity={[0, -9.81, 0]}
+                    timeStep={1 / 120}
+                    updatePriority={-50}
+                    paused={guest || finished || landingAnimationMode}
+                >
+                    <PoolPhysicsProvider>
+                        {isReady && (
+                            <>
+                                {!landingAnimationMode && <KeyboardControls />}
+                                <PlayerProjectile
+                                    preview={landingAnimationMode}
+                                />
+                                <Balls preview={landingAnimationMode} />
+                                {!landingAnimationMode && (
+                                    <PoolPhysicsController />
+                                )}
+                                {!landingAnimationMode && <CueBallPlacement />}
+                            </>
+                        )}
+                        <Table />
+                        <TableBottom />
+                    </PoolPhysicsProvider>
+                </Physics>
+            </Suspense>
         </Canvas>
     );
 }
 
 export default memo(GameCanvas);
-
-function Holes() {
-    return (
-        <group>
-            {/* Top */}
-            <Hole
-                position={[25, -0.79, -50]}
-                args={[2, 2, 2.1]}
-            />
-            <Hole
-                position={[-25, -0.79, -50]}
-                args={[2, 2, 2.1]}
-            />
-
-            {/* Middle */}
-            <Hole
-                position={[25, -0.79, 0]}
-                args={[2, 2, 2.1]}
-            />
-            <Hole
-                position={[-25, -0.79, 0]}
-                args={[2, 2, 2.1]}
-            />
-
-            {/* Bottom */}
-            <Hole
-                position={[25, -0.79, 50]}
-                args={[2, 2, 2.1]}
-            />
-            <Hole
-                position={[-25, -0.79, 50]}
-                args={[2, 2, 2.1]}
-            />
-        </group>
-    );
-}
-
-function Hole({ position, args }) {
-    const [ref, api] = useBox(() => ({
-        mass: 0,
-        type: "Static",
-        args: args,
-        position: position,
-    }));
-
-    return (
-        <mesh
-            ref={ref}
-            castShadow
-        >
-            <cylinderGeometry args={args} />
-            {/* <BeachBall /> */}
-            <meshStandardMaterial color="black" />
-        </mesh>
-    );
-}
-
-function OuterWalls() {
-    const lengthOffsetX = 29;
-
-    return (
-        <group>
-            {/* Length Walls */}
-            <Wall
-                position={[lengthOffsetX, 1, 0]}
-                args={[2, 2, 106]}
-            />
-            <Wall
-                position={[-lengthOffsetX, 1, 0]}
-                args={[2, 2, 106]}
-            />
-
-            {/* Width Walls */}
-            <Wall
-                position={[0, 1, 54]}
-                args={[60, 2, 2]}
-            />
-            <Wall
-                position={[0, 1, -54]}
-                args={[60, 2, 2]}
-            />
-        </group>
-    );
-}
-
-function InnerWalls() {
-    const wallWidth = 3;
-    const lengthOffsetX = 26.5;
-
-    return (
-        <group>
-            {/* North Length Walls */}
-            <Wall
-                position={[lengthOffsetX, 1, -25]}
-                args={[wallWidth, 2, 46]}
-                inner
-            />
-            <Wall
-                position={[-lengthOffsetX, 1, -25]}
-                args={[wallWidth, 2, 46]}
-                inner
-            />
-
-            {/* South Length Walls */}
-            <Wall
-                position={[lengthOffsetX, 1, 25]}
-                args={[wallWidth, 2, 46]}
-                inner
-            />
-            <Wall
-                position={[-lengthOffsetX, 1, 25]}
-                args={[wallWidth, 2, 46]}
-                inner
-            />
-
-            {/* Width Walls */}
-            <Wall
-                position={[0, 1, 51.5]}
-                args={[46, 2, wallWidth]}
-                inner
-            />
-            <Wall
-                position={[0, 1, -51.5]}
-                args={[46, 2, wallWidth]}
-                inner
-            />
-        </group>
-    );
-}
-
-function Wall({ position, args, inner }) {
-    const [ref, api] = useBox(() => ({
-        mass: 0,
-        type: "Static",
-        args: args,
-        position: position,
-        material: { friction: 1, restitution: 1 },
-    }));
-
-    return (
-        <mesh
-            ref={ref}
-            castShadow
-        >
-            <boxGeometry args={args} />
-            {/* <BeachBall /> */}
-            {/* <meshStandardMaterial color={inner ? "#054600" : "chocolate"} /> */}
-            <meshStandardMaterial
-                color={inner ? "#054600" : "chocolate"}
-                emissive={"#054600"} // glow color
-                emissiveIntensity={0.9} // adjust for subtle glow
-            />
-            {/* <rectAreaLight
-                width={30}
-                height={30}
-                color={"limegreen"}
-                intensity={0.3}
-                distance={100}
-                position={[0, 2, 0]}
-                rotation={[-Math.PI / 2, 0, 0]}
-            /> */}
-        </mesh>
-    );
-}

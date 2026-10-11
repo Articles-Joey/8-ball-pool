@@ -1,420 +1,390 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Peer from "peerjs";
-import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useSearchParams } from "next/navigation";
+import { useEightBallStore } from "@/hooks/useEightBallStore";
+import { useStore } from "@/hooks/useStore";
+import {
+    makeSnapshot,
+    normalizeRoomCode,
+    PEER_PREFIX,
+    POOL_PROTOCOL,
+    validSnapshot,
+} from "@/util/poolGame";
 
+// Mounted once by GamePage, independently of whether the sidebar is visible.
 export function usePeer() {
-    const searchParams = useSearchParams();
-    const searchParamsObject = Object.fromEntries(searchParams.entries());
-
-    const idPrefix = "articles-media-8-ball-pool-";
-
-    const {
-        peerId,
-        setPeerId,
-        connected,
-        setConnected,
-        connectionPeerId,
-        setConnectionPeerId,
-        players,
-        setPlayers,
-        lastLaunch,
-        setLastLaunch,
-        isHost,
-        setIsHost,
-        setCurrentTurn,
-        setBallPositions,
-        setBallPositionsUpdated,
-        setCuePower,
-        setCueRotation,
-        setNudge,
-        setResetPeer,
-        peerRef,
-        connectionRef,
-        nudge,
-        cuePower,
-        cueRotation,
-        currentTurn,
-    } = useEightBallStore();
-
-    const manuallyDisconnectedRef = useRef(false);
+    const gameId = useSearchParams().get("game_id");
 
     useEffect(() => {
-        if (!peerRef.current) {
-            console.log("Setting up Peer from hook");
+        const store = useEightBallStore;
+        const multiplayer = Boolean(gameId);
+        store.getState().startSession(multiplayer ? "multiplayer" : "local");
+        if (!multiplayer) return;
 
-            const initPeer = (id) => {
-                const newPeer = new Peer(id, { debug: 2 });
-                peerRef.current = newPeer;
-
-                newPeer.on("open", (id) => {
-                    setPeerId(id);
-                    console.log(`My peer ID is: ${id}`);
-                    setPlayers([...new Set([...players, id])]);
-
-                    if (
-                        searchParamsObject.game_id === "loading" ||
-                        searchParamsObject.game_id === id.replace(idPrefix, "")
-                    ) {
-                        const url = new URL(window.location.href);
-                        url.searchParams.set(
-                            "game_id",
-                            id.replace(idPrefix, ""),
-                        );
-                        window.history.replaceState({}, "", url);
-                        if (searchParamsObject.game_id !== "loading") {
-                            setIsHost(true);
-                        }
-                    }
-                });
-
-                newPeer.on("connection", function (conn) {
-                    console.log("A connection was made?");
-                    setConnected(true);
-                    setPlayers([
-                        ...new Set([
-                            ...useEightBallStore.getState().players,
-                            conn.peer,
-                        ]),
-                    ]);
-
-                    setTimeout(() => {
-                        conn.send({
-                            type: "Turn Change",
-                            turn: useEightBallStore.getState().currentTurn,
-                        });
-                        conn.send({
-                            type: "Ball Sync",
-                            ballPositions:
-                                useEightBallStore.getState().ballPositions,
-                        });
-                    }, 500);
-
-                    conn.on("data", (data) => {
-                        console.log("Received data:", data);
-                        if (
-                            data.type === "Ball Positions" ||
-                            data.type === "Ball Sync"
-                        ) {
-                            setBallPositions(data.ballPositions);
-                            setBallPositionsUpdated(data.ballPositions);
-                        }
-                        if (data.type === "Adjustment Event") {
-                            const currentTurnState =
-                                useEightBallStore.getState().currentTurn;
-                            if (currentTurnState === conn.peer) {
-                                setCuePower(data.cuePower);
-                                setCueRotation(data.cueRotation);
-
-                                // Host broadcasts to all other clients
-                                if (
-                                    peerRef.current &&
-                                    peerRef.current.connections
-                                ) {
-                                    Object.keys(
-                                        peerRef.current.connections,
-                                    ).forEach((pid) => {
-                                        if (pid !== conn.peer) {
-                                            peerRef.current.connections[
-                                                pid
-                                            ].forEach((c) => {
-                                                if (c.open) c.send(data);
-                                            });
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                        if (data.type === "Launch Event") {
-                            const currentTurnState =
-                                useEightBallStore.getState().currentTurn;
-                            if (
-                                currentTurnState &&
-                                currentTurnState !== conn.peer
-                            ) {
-                                console.log(
-                                    "Ignoring Launch Event - not this player's turn",
-                                );
-                            } else {
-                                setCuePower(data.cuePower);
-                                setCueRotation(data.cueRotation);
-                                setNudge(true);
-                                setLastLaunch({
-                                    cuePower: data.cuePower,
-                                    cueRotation: data.cueRotation,
-                                    time: new Date().toLocaleTimeString(),
-                                });
-                                if (
-                                    peerRef.current &&
-                                    peerRef.current.connections
-                                ) {
-                                    Object.keys(
-                                        peerRef.current.connections,
-                                    ).forEach((pid) => {
-                                        if (pid !== conn.peer) {
-                                            peerRef.current.connections[
-                                                pid
-                                            ].forEach((c) => {
-                                                c.send({
-                                                    type: "Launch Event",
-                                                    cuePower: data.cuePower,
-                                                    cueRotation:
-                                                        data.cueRotation,
-                                                });
-                                            });
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                        if (data.type === "Connection") {
-                            connectToPeer(data.peerId);
-                        }
-                        if (data.type === "Kick") {
-                            disconnectPeer();
-                        }
-                        if (data.type === "Turn Change") {
-                            setCurrentTurn(data.turn);
-                        }
-                    });
-
-                    conn.on("close", () => {
-                        const newPlayers = useEightBallStore
-                            .getState()
-                            .players.filter((p) => p !== conn.peer);
-                        setPlayers(newPlayers);
-                        if (newPlayers.length === 0) setConnected(false);
-                    });
-                });
-
-                newPeer.on("error", (err) => {
-                    console.error("Peer error:", err);
-                    if (
-                        err.type === "unavailable-id" &&
-                        searchParamsObject.game_id &&
-                        searchParamsObject.game_id !== "loading"
-                    ) {
-                        newPeer.destroy();
-                        const randomFourDigit = Math.floor(
-                            1000 + Math.random() * 9000,
-                        );
-                        initPeer(`${idPrefix}${randomFourDigit}`);
-                    }
-                });
-            };
-
-            let desiredId;
-            if (
-                searchParamsObject.game_id &&
-                searchParamsObject.game_id !== "loading"
-            ) {
-                desiredId = `${idPrefix}${searchParamsObject.game_id}`;
-            } else {
-                const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
-                desiredId = `${idPrefix}${randomFourDigit}`;
+        const hosting = gameId === "loading";
+        const roomCode = normalizeRoomCode(gameId);
+        let peer;
+        let connection;
+        let disposed = false;
+        let sequence = 0;
+        let receivedSequence = -1;
+        let commandNumber = 0;
+        let pendingAim = null;
+        let retries = 0;
+        let timeout;
+        let pendingTimeout;
+        let lastSnapshotState;
+        let unsubscribe = () => {};
+        const localName = String(
+            useStore.getState().nickname || "Player",
+        ).slice(0, 32);
+        const nameOf = (conn) =>
+            String(conn.metadata?.name || "Guest").slice(0, 32);
+        const packet = (type, fields = {}) => ({
+            protocol: POOL_PROTOCOL,
+            type,
+            ...fields,
+        });
+        const setError = (message) =>
+            store.setState({
+                networkError: message,
+                networkBusy: false,
+            });
+        const send = (conn, data) => {
+            if (!conn?.open || disposed) return false;
+            try {
+                conn.send(data);
+                return true;
+            } catch {
+                setError(
+                    "Connection lost. Return to the lobby to start another game.",
+                );
+                return false;
             }
-            initPeer(desiredId);
+        };
+        const sendSnapshot = (conn = connection, extra = {}) => {
+            if (!hosting || !conn?.open) return;
+            lastSnapshotState = store.getState();
+            send(
+                conn,
+                packet("state", {
+                    sequence: ++sequence,
+                    snapshot: makeSnapshot(lastSnapshotState),
+                    ...extra,
+                }),
+            );
+        };
+        const disconnect = (message = "You left the room.") => {
+            clearTimeout(timeout);
+            clearTimeout(pendingTimeout);
+            const state = store.getState();
+            if (connection?.open) send(connection, packet("leave"));
+            state.playerDisconnected(state.peerId);
+            connection?.close();
+            connection = null;
+            store.setState({
+                connectionRef: { current: null },
+                networkError: message,
+                sendPeerCommand: null,
+                networkBusy: false,
+            });
+        };
+
+        const attachConnection = (conn, outgoing = false) => {
+            let accepted = false;
+            let lastCommand = 0;
+            conn.on("open", () => {
+                if (disposed) {
+                    conn.close();
+                    return;
+                }
+                clearTimeout(timeout);
+                if (hosting) {
+                    if (
+                        conn.metadata?.protocol !== POOL_PROTOCOL ||
+                        connection?.open ||
+                        !store.getState().seatGuest(conn.peer, nameOf(conn))
+                    ) {
+                        send(
+                            conn,
+                            packet("reject", {
+                                message:
+                                    "This room already has two players or uses a different game version.",
+                            }),
+                        );
+                        // Allow the reliable rejection packet to leave before closing.
+                        setTimeout(() => conn.close(), 200);
+                        return;
+                    }
+                } else if (
+                    !outgoing ||
+                    conn.peer !== `${PEER_PREFIX}${roomCode}`
+                ) {
+                    conn.close();
+                    return;
+                }
+                accepted = true;
+                connection = conn;
+                receivedSequence = -1;
+                store.setState({
+                    connected: true,
+                    peerStatus: "connected",
+                    networkError: "",
+                    connectionRef: { current: conn },
+                });
+                if (hosting) sendSnapshot(conn);
+            });
+            conn.on("data", (data) => {
+                if (disposed || !data || data.protocol !== POOL_PROTOCOL)
+                    return;
+                if (!hosting && data.type === "reject" && outgoing) {
+                    clearTimeout(timeout);
+                    setError(
+                        String(
+                            data.message || "The host rejected the connection.",
+                        ),
+                    );
+                    store.setState({ connected: false, peerStatus: "error" });
+                    accepted = false;
+                    connection = null;
+                    return;
+                }
+                if (!accepted || conn !== connection) return;
+                if (data.type === "leave") {
+                    store.getState().playerDisconnected(conn.peer);
+                    conn.close();
+                    return;
+                }
+                if (hosting) {
+                    // Guests never supply turns, physics snapshots, scores, or winners.
+                    if (
+                        data.type !== "command" ||
+                        !Number.isInteger(data.id) ||
+                        data.id <= lastCommand
+                    )
+                        return;
+                    lastCommand = data.id;
+                    const state = store.getState();
+                    const valid =
+                        data.matchId === state.matchId &&
+                        data.shotNumber === state.shotNumber;
+                    const acceptedCommand =
+                        valid &&
+                        state.applyGameCommand(data.command, conn.peer);
+                    sendSnapshot(conn, {
+                        acknowledgement: data.id,
+                        error: acceptedCommand
+                            ? ""
+                            : "That action is no longer available. The table has been refreshed.",
+                    });
+                } else if (
+                    data.type === "state" &&
+                    Number.isInteger(data.sequence) &&
+                    data.sequence > receivedSequence &&
+                    validSnapshot(data.snapshot)
+                ) {
+                    receivedSequence = data.sequence;
+                    clearTimeout(pendingTimeout);
+                    if (
+                        data.snapshot.phase !== "aiming" ||
+                        data.snapshot.currentTurn !== store.getState().peerId ||
+                        (Number.isInteger(data.acknowledgement) &&
+                            data.acknowledgement >= pendingAim?.id)
+                    )
+                        pendingAim = null;
+                    const snapshot = pendingAim
+                        ? { ...data.snapshot, ...pendingAim.values }
+                        : data.snapshot;
+                    store.getState().applyPeerSnapshot(snapshot);
+                    if (data.error) setError(String(data.error));
+                    else if (Number.isInteger(data.acknowledgement))
+                        store.setState({ networkError: "" });
+                }
+            });
+            const closed = () => {
+                if (disposed || !accepted || conn !== connection) return;
+                clearTimeout(pendingTimeout);
+                store.getState().playerDisconnected(conn.peer);
+                store.setState({
+                    connectionRef: { current: null },
+                    networkBusy: false,
+                    networkError:
+                        "The other player disconnected. This rack has ended.",
+                });
+                connection = null;
+            };
+            conn.on("close", closed);
+            conn.on("error", (error) => {
+                if (accepted) closed();
+                else {
+                    clearTimeout(timeout);
+                    setError(error.message || "Unable to join this room.");
+                    store.setState({ peerStatus: "error", connected: false });
+                }
+            });
+        };
+
+        const connect = () => {
+            if (disposed || hosting || !peer?.open || connection?.open) return;
+            if (!/^[a-z0-9-]{4,64}$/.test(roomCode)) {
+                setError("Enter a valid room code.");
+                store.setState({ peerStatus: "error" });
+                return;
+            }
+            connection?.close();
+            store.setState({ peerStatus: "connecting", networkError: "" });
+            const conn = peer.connect(`${PEER_PREFIX}${roomCode}`, {
+                reliable: true,
+                serialization: "json",
+                metadata: { protocol: POOL_PROTOCOL, name: localName },
+            });
+            attachConnection(conn, true);
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (!disposed && !store.getState().connected) {
+                    conn.close();
+                    setError(
+                        "The room could not be reached. Check the code and try again.",
+                    );
+                    store.setState({ peerStatus: "error" });
+                }
+            }, 15000);
+        };
+
+        const createPeer = () => {
+            const suffix = crypto
+                .randomUUID()
+                .replaceAll("-", "")
+                .slice(0, hosting ? 8 : 16);
+            peer = new Peer(`${PEER_PREFIX}${suffix}`);
+            const thisPeer = peer;
+            store.setState({ peerRef: { current: peer } });
+            peer.on("open", (id) => {
+                if (disposed || peer !== thisPeer) return;
+                store.setState({
+                    peerId: id,
+                    roomCode: hosting ? normalizeRoomCode(id) : roomCode,
+                });
+                if (hosting)
+                    store
+                        .getState()
+                        .seatHost(id, localName, normalizeRoomCode(id));
+                else connect();
+            });
+            peer.on("connection", (conn) => {
+                if (hosting && !disposed) attachConnection(conn);
+                else conn.close();
+            });
+            peer.on("error", (error) => {
+                if (disposed || peer !== thisPeer) return;
+                if (error.type === "unavailable-id" && retries++ < 3) {
+                    thisPeer.destroy();
+                    createPeer();
+                    return;
+                }
+                clearTimeout(timeout);
+                setError(
+                    error.type === "peer-unavailable"
+                        ? "Room not found. Check the room code or ask the host for a new invite."
+                        : error.message || "Unable to connect to multiplayer.",
+                );
+                if (!connection?.open)
+                    store.setState({ peerStatus: "error", connected: false });
+            });
+            peer.on("disconnected", () => {
+                if (!disposed && !thisPeer.destroyed) thisPeer.reconnect();
+            });
+        };
+
+        store.setState({
+            retryPeerConnection: () => {
+                if (peer?.destroyed || !peer?.open) {
+                    peer?.destroy();
+                    createPeer();
+                } else connect();
+            },
+            leavePeerSession: disconnect,
+            sendPeerCommand: (command) => {
+                const state = store.getState();
+                if (!connection?.open || state.networkBusy) return false;
+                const waitsForReply = [
+                    "shoot",
+                    "confirm-placement",
+                    "break-choice",
+                    "rematch",
+                ].includes(command.type);
+                if (waitsForReply) {
+                    store.setState({ networkBusy: true, networkError: "" });
+                    clearTimeout(pendingTimeout);
+                    pendingTimeout = setTimeout(() => {
+                        if (!disposed)
+                            setError(
+                                "The host has not responded. Wait for the table to refresh before trying again.",
+                            );
+                    }, 5000);
+                }
+                const id = ++commandNumber;
+                const sent = send(
+                    connection,
+                    packet("command", {
+                        id,
+                        matchId: state.matchId,
+                        shotNumber: state.shotNumber,
+                        command,
+                    }),
+                );
+                if (sent && command.type === "aim") {
+                    const values = { ...(pendingAim?.values || {}) };
+                    if (Number.isFinite(command.power))
+                        values.cuePower = Math.max(
+                            0,
+                            Math.min(100, command.power),
+                        );
+                    if (Number.isFinite(command.rotation))
+                        values.cueRotation =
+                            ((command.rotation % 360) + 360) % 360;
+                    pendingAim = { id, values };
+                    store.setState(values);
+                }
+                if (!sent) store.setState({ networkBusy: false });
+                return sent;
+            },
+        });
+        if (hosting) {
+            unsubscribe = store.subscribe((state, previous) => {
+                if (
+                    state.phase !== previous.phase ||
+                    state.winner !== previous.winner ||
+                    state.matchId !== previous.matchId ||
+                    state.rematchRequests !== previous.rematchRequests
+                )
+                    sendSnapshot();
+            });
         }
+        // One authoritative stream includes cue ball, transforms, side assignments and turn state.
+        const interval = setInterval(() => {
+            if (hosting && store.getState() !== lastSnapshotState)
+                sendSnapshot();
+        }, 80);
+        createPeer();
 
         return () => {
-            // We might not want to destroy here if the hook is used in multiple places,
-            // but the user only uses it in LeftPanel which stays mounted.
+            disposed = true;
+            clearInterval(interval);
+            clearTimeout(timeout);
+            clearTimeout(pendingTimeout);
+            unsubscribe();
+            connection?.close();
+            peer?.destroy();
+            store.setState({
+                connected: false,
+                sendPeerCommand: null,
+                networkBusy: false,
+                retryPeerConnection: null,
+                leavePeerSession: null,
+                peerRef: { current: null },
+                connectionRef: { current: null },
+            });
         };
-    }, []);
-
-    useEffect(() => {
-        if (manuallyDisconnectedRef.current) return;
-        if (searchParamsObject.game_id === "loading") {
-            setIsHost(true);
-        } else if (
-            peerId &&
-            !connected &&
-            !isHost &&
-            searchParamsObject.game_id
-        ) {
-            connectToPeer(`${idPrefix}${searchParamsObject.game_id}`);
-        }
-    }, [peerId, connected, isHost, searchParamsObject.game_id]);
-
-    function connectToPeer(id) {
-        if (!peerRef.current) return;
-        const connection = peerRef.current.connect(id);
-        connection.on("open", () => {
-            connectionRef.current = connection;
-            connectionRef.current.send({
-                type: "Connection",
-                date: new Date(),
-                peerId,
-            });
-            setConnected(true);
-            setPlayers([
-                ...new Set([...useEightBallStore.getState().players, id]),
-            ]);
-            connectionRef.current.on("data", (data) => {
-                if (data.type === "Kick") disconnectPeer();
-                if (data.type === "Turn Change") setCurrentTurn(data.turn);
-                if (data.type === "Adjustment Event") {
-                    setCuePower(data.cuePower);
-                    setCueRotation(data.cueRotation);
-                }
-                if (data.type === "Ball Sync") {
-                    setBallPositions(data.ballPositions);
-                    setBallPositionsUpdated(data.ballPositions);
-                }
-                if (data.type === "Launch Event") {
-                    setCuePower(data.cuePower);
-                    setCueRotation(data.cueRotation);
-                    setNudge(true);
-                    setLastLaunch({
-                        cuePower: data.cuePower,
-                        cueRotation: data.cueRotation,
-                        time: new Date().toLocaleTimeString(),
-                    });
-                }
-            });
-        });
-        connection.on("close", () => {
-            const newPlayers = useEightBallStore
-                .getState()
-                .players.filter((p) => p !== id);
-            setPlayers(newPlayers);
-            if (newPlayers.length === 0) setConnected(false);
-        });
-    }
-
-    function disconnectPeer() {
-        manuallyDisconnectedRef.current = true;
-        if (peerRef.current) {
-            peerRef.current.disconnect();
-            peerRef.current.destroy();
-            peerRef.current = null;
-        }
-        setConnected(false);
-        setPeerId("");
-        setResetPeer(true);
-        setPlayers([]);
-    }
-
-    function kickUser(id) {
-        if (!isHost || !peerRef.current) return;
-        if (peerRef.current.connections[id]) {
-            peerRef.current.connections[id].forEach((conn) => {
-                conn.send({ type: "Kick" });
-                setTimeout(() => conn.close(), 100);
-            });
-        }
-        setPlayers(players.filter((p) => p !== id));
-    }
-
-    function changeTurn(id) {
-        if (!isHost) return;
-        setCurrentTurn(id);
-        const ballPositions = useEightBallStore.getState().ballPositions;
-        if (peerRef.current && peerRef.current.connections) {
-            Object.keys(peerRef.current.connections).forEach((pid) => {
-                peerRef.current.connections[pid].forEach((conn) => {
-                    conn.send({ type: "Turn Change", turn: id });
-                    conn.send({ type: "Ball Sync", ballPositions });
-                });
-            });
-        }
-    }
-
-    function sendMessage() {
-        if (connectionRef.current) {
-            connectionRef.current.send({
-                type: "Ball Positions",
-                date: new Date(),
-                peerId,
-                ballPositions: useEightBallStore.getState().ballPositions,
-                cuePower,
-                cueRotation,
-            });
-        }
-    }
-
-    // Broadcast launch event when nudge fires
-    const prevNudgeRef = useRef(false);
-    useEffect(() => {
-        if (nudge && !prevNudgeRef.current) {
-            const currentTurnState = useEightBallStore.getState().currentTurn;
-            if (!currentTurnState || currentTurnState === peerId) {
-                const launchCuePower = useEightBallStore.getState().cuePower;
-                const launchCueRotation =
-                    useEightBallStore.getState().cueRotation;
-                setLastLaunch({
-                    cuePower: launchCuePower,
-                    cueRotation: launchCueRotation,
-                    time: new Date().toLocaleTimeString(),
-                });
-
-                // Broadcast
-                if (peerRef.current && peerRef.current.connections) {
-                    Object.keys(peerRef.current.connections).forEach((pid) => {
-                        peerRef.current.connections[pid].forEach((conn) => {
-                            if (conn.open)
-                                conn.send({
-                                    type: "Launch Event",
-                                    cuePower: launchCuePower,
-                                    cueRotation: launchCueRotation,
-                                });
-                        });
-                    });
-                }
-                if (connectionRef.current && connectionRef.current.open) {
-                    connectionRef.current.send({
-                        type: "Launch Event",
-                        cuePower: launchCuePower,
-                        cueRotation: launchCueRotation,
-                    });
-                }
-            }
-        }
-        prevNudgeRef.current = nudge;
-    }, [nudge]);
-
-    // Broadcast adjustment events (Rotation/Power)
-    useEffect(() => {
-        const currentTurnState = useEightBallStore.getState().currentTurn;
-
-        // Only broadcast if it's my turn
-        if (currentTurnState === peerId) {
-            const data = {
-                type: "Adjustment Event",
-                cuePower,
-                cueRotation,
-            };
-
-            // If I am host, broadcast to everyone
-            if (isHost && peerRef.current && peerRef.current.connections) {
-                Object.keys(peerRef.current.connections).forEach((pid) => {
-                    peerRef.current.connections[pid].forEach((conn) => {
-                        if (conn.open) conn.send(data);
-                    });
-                });
-            }
-            // If I am client, send to host
-            else if (connectionRef.current && connectionRef.current.open) {
-                connectionRef.current.send(data);
-            }
-        }
-    }, [cuePower, cueRotation, peerId, isHost]);
-
-    return {
-        peerId,
-        connectionPeerId,
-        setConnectionPeerId,
-        connected,
-        connectToPeer,
-        disconnectPeer,
-        isHost,
-        setIsHost,
-        players,
-        currentTurn,
-        changeTurn,
-        kickUser,
-        lastLaunch,
-        sendMessage,
-        idPrefix,
-    };
+    }, [gameId]);
 }

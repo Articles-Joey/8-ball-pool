@@ -7,7 +7,6 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Alert from "@mui/material/Alert";
 import TextField from "@mui/material/TextField";
 import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -18,9 +17,12 @@ import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMen
 import useUserDetails from "@articles-media/articles-dev-box/useUserDetails";
 import useUserToken from "@articles-media/articles-dev-box/useUserToken";
 import ArticlesButton from "@/components/UI/Button";
+import gameTextSx from "@/components/UI/gameTextSx";
 import IsDev from "@/components/UI/IsDev";
 import { useStore } from "@/hooks/useStore";
 import { useSocketStore } from "@/hooks/useSocketStore";
+import LandingBackgroundAnimation from "@/components/Game/LandingBackgroundAnimation";
+import { normalizeRoomCode } from "@/util/poolGame";
 
 const Ad = dynamic(() => import("@articles-media/articles-dev-box/Ad"), {
     ssr: false,
@@ -44,6 +46,7 @@ export default function LandingPage() {
     const socket = useSocketStore((state) => state.socket);
     const router = useRouter();
     const darkMode = useStore((state) => state.darkMode);
+    const landingAnimation = useStore((state) => state.landingAnimation);
     const lobbyDetails = useStore((state) => state.lobbyDetails);
     const setLobbyDetails = useStore((state) => state.setLobbyDetails);
     const [prepareMultiplayer, setPrepareMultiplayer] = useState(false);
@@ -75,7 +78,7 @@ export default function LandingPage() {
 
     function attemptConnection() {
         const params = new URLSearchParams({
-            game_id: `articles-media-8-ball-pool-${prepareMultiplayer.room_code}`,
+            game_id: normalizeRoomCode(prepareMultiplayer.room_code),
         });
         router.push(`/play?${params.toString()}`);
     }
@@ -105,7 +108,19 @@ export default function LandingPage() {
                                 : "blur(10px)",
                     })}
                 />
+                {landingAnimation && (
+                    <Box
+                        sx={{
+                            position: "fixed",
+                            inset: 0,
+                            zIndex: 1,
+                        }}
+                    >
+                        <LandingBackgroundAnimation />
+                    </Box>
+                )}
             </Box>
+
             <Box
                 sx={{
                     width: "100%",
@@ -155,7 +170,7 @@ export default function LandingPage() {
                                         sx={{ mb: 2 }}
                                         startIcon={<PersonIcon />}
                                     >
-                                        Play Single Player
+                                        Local Play
                                     </ArticlesButton>
                                     <ArticlesButton
                                         fullWidth
@@ -200,13 +215,20 @@ export default function LandingPage() {
                                             </ArticlesButton>
                                         </Box>
                                     ) : (
-                                        <Box>
-                                            <Alert
-                                                severity="error"
-                                                sx={{ py: 0.5, mb: 1 }}
+                                        <Box sx={gameTextSx}>
+                                            <Box
+                                                sx={{
+                                                    fontSize: "0.85rem",
+                                                    mb: 1,
+                                                    color:
+                                                        darkMode === false
+                                                            ? "#000"
+                                                            : "#fff",
+                                                }}
                                             >
-                                                Invalid room code
-                                            </Alert>
+                                                Enter the room code shared by
+                                                your host.
+                                            </Box>
                                             <TextField
                                                 label="Room code"
                                                 value={

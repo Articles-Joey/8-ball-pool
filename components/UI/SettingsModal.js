@@ -11,6 +11,7 @@ import Tab from "@mui/material/Tab";
 import Chip from "@mui/material/Chip";
 import ArticlesModal from "./ArticlesModal";
 import ArticlesButton from "./Button";
+import gameTextSx from "./gameTextSx";
 import { useEightBallStore } from "@/hooks/useEightBallStore";
 import { useStore } from "@/hooks/useStore";
 
@@ -19,6 +20,7 @@ const controls = [
     ["Decrease Power", "Arrow Down"],
     ["Rotate Left", "Arrow Left"],
     ["Rotate Right", "Arrow Right"],
+    ["Fine Aim / Power (hold)", "Z"],
 ];
 
 export default function GameSettingsModal({ show, setShow }) {
@@ -35,6 +37,7 @@ export default function GameSettingsModal({ show, setShow }) {
             show={show}
             setShow={setShow}
             title="Game Settings"
+            sx={gameTextSx}
             centered={false}
             contentSx={{ p: 0 }}
             footerOverride={(close) => (

@@ -3,6 +3,7 @@
 import { persist } from "zustand/middleware";
 // import { create } from 'zustand'
 import { createWithEqualityFn as create } from "zustand/traditional";
+import { createPoolGameSlice } from "@/util/poolGame";
 // import { nanoid } from 'nanoid'
 
 // const getLocalStorage = (key) => JSON.parse(window.localStorage.getItem(key))
@@ -10,7 +11,7 @@ import { createWithEqualityFn as create } from "zustand/traditional";
 
 export const useEightBallStore = create(
     persist(
-        (set) => ({
+        (set, get) => ({
             debug: false,
             setDebug: (newValue) => {
                 set((prev) => ({
@@ -85,7 +86,13 @@ export const useEightBallStore = create(
             },
 
             ballPositions: [],
-            setBallPosition: (ballNumber, position, velocity, rotation) => {
+            setBallPosition: (
+                ballNumber,
+                position,
+                velocity,
+                rotation,
+                angularVelocity,
+            ) => {
                 set((prev) => {
                     // return prev.ballPositions
 
@@ -124,6 +131,11 @@ export const useEightBallStore = create(
                                           rotation.x,
                                           rotation.y,
                                           rotation.z,
+                                      ],
+                                      angularVelocity: [
+                                          angularVelocity.x,
+                                          angularVelocity.y,
+                                          angularVelocity.z,
                                       ],
                                   }
                                 : pos,
@@ -220,6 +232,7 @@ export const useEightBallStore = create(
 
             peerRef: { current: null },
             connectionRef: { current: null },
+            ...createPoolGameSlice(set, get),
         }),
         {
             name: "eight-ball-settings",

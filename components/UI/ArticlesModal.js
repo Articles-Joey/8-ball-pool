@@ -6,7 +6,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import ArticlesButton from "./Button";
 
@@ -69,13 +68,20 @@ export default function ArticlesModal({
             >
                 {title || "Info"}
                 {!disableClose && (
-                    <IconButton
+                    <ArticlesButton
                         aria-label="Close dialog"
+                        variant="link"
                         onClick={close}
-                        sx={{ position: "absolute", right: 8, top: 8 }}
+                        sx={{
+                            position: "absolute",
+                            right: 8,
+                            top: 8,
+                            p: 1,
+                            borderRadius: "50%",
+                        }}
                     >
                         <CloseIcon />
-                    </IconButton>
+                    </ArticlesButton>
                 )}
             </DialogTitle>
             <DialogContent
