@@ -1,6 +1,6 @@
 # 8 Ball Pool
 
-![Game Preview](/public/img/game-preview.webp)
+![Game Preview](/public/img/previews/preview-1.webp)
 
 Same rules as traditional 8 ball pool.
 
@@ -21,6 +21,11 @@ In the scripts folder is reset_public and sync_to_s3. This is only for Articles 
 ## Multiplayer
 
 Play with other friends via peerjs multiplayer P2P sessions! Start a lobby of your own or enter a friends peer id to connect and take turns playing online.
+
+## Previews
+
+![Game Preview](/public/img/previews/preview-2.webp)
+![Game Preview](/public/img/previews/preview-3.webp)
 
 ## Attributions
 
