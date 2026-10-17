@@ -1,43 +1,23 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 
 export default function FlickerFireLight() {
     const lightRef = useRef();
-    const [intensity, setIntensity] = useState(50000);
-    const minIntensity = 20000;
-    const maxIntensity = 50000;
-    const speed = 0.01; // Flicker speed
-
-    useFrame(() => {
-        // Flicker using sine wave + random noise
-        const time = performance.now() * 0.002 * speed;
-        const flicker = Math.sin(time) * 0.5 + 0.5; // 0 to 1
-        const random = Math.random() * 0.2 + 0.9; // Slight randomness
-        const newIntensity =
-            minIntensity + (maxIntensity - minIntensity) * flicker * random;
-        setIntensity(newIntensity);
+    useFrame(({ clock }) => {
         if (lightRef.current) {
-            lightRef.current.intensity = newIntensity;
+            const time = clock.elapsedTime;
+            lightRef.current.intensity =
+                6000 + Math.sin(time * 7) * 650 + Math.sin(time * 13.3) * 350;
         }
     });
 
     return (
-        <group>
-            <spotLight
-                ref={lightRef}
-                intensity={intensity}
-                angle={1}
-                penumbra={1}
-                color={"red"}
-            />
-
-            <spotLight
-                // ref={lightRef}
-                intensity={5000}
-                angle={2}
-                penumbra={1}
-                color={"orange"}
-            />
-        </group>
+        <pointLight
+            ref={lightRef}
+            intensity={6000}
+            distance={180}
+            decay={2}
+            color="#ff9a45"
+        />
     );
 }

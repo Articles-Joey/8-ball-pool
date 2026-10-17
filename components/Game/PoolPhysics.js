@@ -363,13 +363,11 @@ export function CueBallPlacement() {
                 onClick={(event) => {
                     if (event.button !== 0 || event.delta > 5) return;
                     event.stopPropagation();
-                    useEightBallStore
-                        .getState()
-                        .requestGameAction({
-                            type: "place",
-                            x: event.point.x,
-                            z: event.point.z,
-                        });
+                    useEightBallStore.getState().requestGameAction({
+                        type: "place",
+                        x: event.point.x,
+                        z: event.point.z,
+                    });
                 }}
             >
                 <planeGeometry args={[50, 100]} />

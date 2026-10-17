@@ -4,7 +4,7 @@
     "homepage": "https://8-ball-pool.articles.media",
     "github": "https://github.com/Articles-Joey/8-ball-pool",
     "version": "1.0.0",
-    "packageManager": "pnpm@12.0.0",
+    "packageManager": "pnpm@12.14.0",
     "private": false,
     "scripts": {
         "dev": "next dev -p 3015",
@@ -14,7 +14,7 @@
         "format": "prettier . --write"
     },
     "dependencies": {
-        "@articles-media/articles-dev-box": "2.0.0",
+        "@articles-media/articles-dev-box": "2.2.1",
         "@articles-media/articles-gamepad-helper": "^0.0.13",
         "@emotion/cache": "^11.14.0",
         "@emotion/react": "^11.14.0",
@@ -28,11 +28,11 @@
         "@react-three/rapier": "^2.2.0",
         "classnames": "^2.5.1",
         "date-fns": "^4.4.0",
-        "next": "^16.4.0",
+        "next": "^16.4.2",
         "peerjs": "^1.5.5",
-        "react": "^19.3.0",
+        "react": "^19.3.1",
         "react-countdown": "^2.3.6",
-        "react-dom": "^19.3.0",
+        "react-dom": "^19.3.1",
         "react-hotkeys-hook": "^5.2.4",
         "react-intersection-observer": "^10.0.0",
         "socket.io-client": "^4.8.1",
@@ -44,7 +44,7 @@
     "devDependencies": {
         "babel-plugin-react-compiler": "^1.0.0",
         "eslint": "^9",
-        "eslint-config-next": "16.4.0",
+        "eslint-config-next": "16.4.2",
         "eslint-config-prettier": "^10.1.8",
         "prettier": "^3.9.6"
     }

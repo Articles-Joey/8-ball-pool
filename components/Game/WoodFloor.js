@@ -18,7 +18,7 @@ export default function WoodFloor(props) {
 
     return (
         <group {...props}>
-            <mesh>
+            <mesh receiveShadow>
                 <planeGeometry {...props} />
                 <meshStandardMaterial {...texture} />
             </mesh>

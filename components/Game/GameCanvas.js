@@ -1,7 +1,8 @@
 import { memo, Suspense, useEffect, useState } from "react";
 
 import { Canvas } from "@react-three/fiber";
-import { Sky, Image, Stats } from "@react-three/drei";
+import { Sky, Stats } from "@react-three/drei";
+import { ACESFilmicToneMapping } from "three";
 
 import { Physics } from "@react-three/rapier";
 
@@ -14,7 +15,7 @@ import { Model as MenPunkModel } from "@/components/Game/PunkWoman";
 import { Model as PunkManSleep } from "@/components/Game/PunkManSleep";
 
 import Tree from "@/components/Game/Tree";
-import { ModelKennyNLFurnitureCardboardBoxOpen } from "@/components/Game/cardboardBoxOpen";
+import ChristmasGifts from "@/components/Game/ChristmasGifts";
 import { Star } from "@/components/Game/Star";
 // import { ModelJToastieCampfire } from "@/components/Games/Campfire";
 import { ModelGoogleCampFire } from "@/components/Game/Camp Fire";
@@ -39,6 +40,8 @@ import RoomWalls from "@/components/Game/RoomWalls";
 import { degToRad } from "three/src/math/MathUtils";
 import { useStore } from "@/hooks/useStore";
 import HallwayWalls from "./HallwayWalls";
+import RoomLighting from "./RoomLighting";
+import SnowSlope from "./SnowSlope";
 import {
     CueBallPlacement,
     PoolPhysicsController,
@@ -71,7 +74,15 @@ function GameCanvas({ landingAnimationMode = false }) {
     }));
 
     return (
-        <Canvas camera={{ position: [-10, 40, 40], fov: 50 }}>
+        <Canvas
+            camera={{ position: [-10, 40, 40], fov: 50, far: 2400 }}
+            shadows="soft"
+            dpr={[1, 1.75]}
+            gl={{
+                toneMapping: ACESFilmicToneMapping,
+                toneMappingExposure: 1.05,
+            }}
+        >
             {showStats && (
                 <>
                     <Stats className="stats-overlay" />
@@ -85,35 +96,16 @@ function GameCanvas({ landingAnimationMode = false }) {
             /> */}
 
             <Sky
-                // distance={450000}
-                sunPosition={[0, -10, 0]}
-                // inclination={0}
-                // azimuth={0.25}
-                // {...props}
+                sunPosition={darkMode ? [400, -30, -200] : [400, 300, -200]}
+                turbidity={6}
+                rayleigh={0.6}
             />
 
-            <ambientLight intensity={darkMode ? 1 : 5} />
-            <spotLight
-                intensity={darkMode ? 1 : 30000}
-                position={[-50, 100, 50]}
-                angle={5}
-                penumbra={1}
-            />
+            <RoomLighting darkMode={darkMode} />
 
-            {darkMode && (
-                <group position={[145, -10, 145]}>
-                    {/* <spotLight
-                        intensity={30000}
-                        // position={[-50, 100, 50]}
-                        angle={1}
-                        penumbra={1}
-                        color={'red'}
-                    /> */}
-                    <FlickerFireLight />
-                </group>
-            )}
-
-            {/* <pointLight position={[-10, -10, -10]} /> */}
+            <group position={[130, -16, 130]}>
+                <FlickerFireLight />
+            </group>
 
             <WoodFloor
                 rotation={[-Math.PI / 2, 0, 0]}
@@ -122,6 +114,7 @@ function GameCanvas({ landingAnimationMode = false }) {
             />
 
             <RoomWalls />
+            <SnowSlope />
 
             <HallwayWalls />
 
@@ -155,18 +148,14 @@ function GameCanvas({ landingAnimationMode = false }) {
                 rotation={[0, -Math.PI / 2, 0]}
             />
 
-            <ModelDoorway
-                position={[-146, -30, 100]}
-                scale={70}
-                rotation={[0, -Math.PI / -2, 0]}
-            />
+            <ModelDoorway />
 
             {darkMode && (
                 <rectAreaLight
                     width={50}
                     height={50}
                     color={"limegreen"}
-                    intensity={11}
+                    intensity={2}
                     distance={100}
                     position={[-150, 0, 20]}
                     rotation={[0, degToRad(-90), 0]}
@@ -211,78 +200,22 @@ function GameCanvas({ landingAnimationMode = false }) {
                 rotation={[0, -Math.PI / -2, 0]}
             />
 
-            {/* Window */}
-            <group>
-                <Image
-                    url={`${process.env.NEXT_PUBLIC_CDN}games/8 Ball Pool/Ski Slope.jpg`}
-                    scale={100}
-                    rotation={[0, Math.PI / -2, 0]}
-                    position={[149, 30, -10]}
-                    alt="Ski Slope"
-                />
-                <mesh
-                    castShadow
-                    position={[149, 30, -60]}
-                >
-                    <boxGeometry args={[5, 100, 5]} />
-                    <meshStandardMaterial color={"black"} />
-                </mesh>
-                <mesh
-                    castShadow
-                    position={[149, 30, 40]}
-                >
-                    <boxGeometry args={[5, 100, 5]} />
-                    <meshStandardMaterial color={"black"} />
-                </mesh>
-
-                {/* Horizontal Bars */}
-                <mesh
-                    castShadow
-                    position={[149, -20, -10]}
-                >
-                    <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial color={"black"} />
-                </mesh>
-                <mesh
-                    castShadow
-                    position={[149, 30, -10]}
-                >
-                    <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial color={"black"} />
-                </mesh>
-                <mesh
-                    castShadow
-                    position={[149, 80, -10]}
-                >
-                    <boxGeometry args={[5, 5, 100]} />
-                    <meshStandardMaterial color={"black"} />
-                </mesh>
-            </group>
-
             {/* Tree */}
             <group position={[-120, -30, -120]}>
-                <Tree scale={4} />
+                <Tree
+                    scale={4}
+                    heightScale={0.85}
+                />
                 <Star
-                    position={[1, 97, -4]}
+                    position={[1, 82.45, -4]}
                     rotation={[0, 0, 0]}
                     scale={10}
                 />
-                <ModelKennyNLFurnitureCardboardBoxOpen
-                    scale={40}
-                    position={[10, 0, 0]}
-                />
-                <ModelKennyNLFurnitureCardboardBoxOpen
-                    scale={40}
-                    position={[0, 0, 20]}
-                />
-                <ModelKennyNLFurnitureCardboardBoxOpen
-                    scale={40}
-                    position={[20, 0, 20]}
-                />
+                <ChristmasGifts />
             </group>
 
             {/* Campfire */}
-            <group position={[135, -30, 135]}>
+            <group position={[130, -30, 130]}>
                 <ModelGoogleCampFire
                     scale={0.3}
                     position={[0, 3, 0]}
@@ -293,7 +226,7 @@ function GameCanvas({ landingAnimationMode = false }) {
                     castShadow
                     position={[0, 1, 0]}
                 >
-                    <boxGeometry args={[50, 5, 50]} />
+                    <boxGeometry args={[40, 5, 40]} />
                     <meshStandardMaterial color={"#222222"} />
                 </mesh>
 
@@ -302,31 +235,31 @@ function GameCanvas({ landingAnimationMode = false }) {
                     castShadow
                     position={[0, 40, 0]}
                 >
-                    <boxGeometry args={[50, 5, 50]} />
+                    <boxGeometry args={[40, 5, 40]} />
                     <meshStandardMaterial color={"#222222"} />
                 </mesh>
 
-                {/* Walls */}
+                {/* Solid back panels sit flush against the room's +X and +Z walls. */}
                 <mesh
                     castShadow
-                    position={[20, 20, -20]}
+                    receiveShadow
+                    position={[0, 20, 17.5]}
                 >
-                    <boxGeometry args={[50, 40, 5]} />
+                    <boxGeometry args={[40, 40, 5]} />
                     <meshStandardMaterial
                         color={"#222222"}
-                        transparent={true}
-                        opacity={0.5}
+                        roughness={0.8}
                     />
                 </mesh>
                 <mesh
                     castShadow
-                    position={[-20, 20, 20]}
+                    receiveShadow
+                    position={[17.5, 20, -2.5]}
                 >
-                    <boxGeometry args={[5, 40, 50]} />
+                    <boxGeometry args={[5, 40, 35]} />
                     <meshStandardMaterial
                         color={"#222222"}
-                        transparent={true}
-                        opacity={0.5}
+                        roughness={0.8}
                     />
                 </mesh>
 

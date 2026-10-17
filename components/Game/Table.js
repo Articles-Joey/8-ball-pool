@@ -159,10 +159,13 @@ function CutSurface({
     roughness = 0.7,
     angledPockets = false,
     felt = false,
+    renderOrder = 0,
+    polygonOffset = false,
 }) {
     return (
         <mesh
             position={position}
+            renderOrder={renderOrder}
             castShadow
             receiveShadow
         >
@@ -176,6 +179,9 @@ function CutSurface({
                 <meshStandardMaterial
                     color={color}
                     roughness={roughness}
+                    polygonOffset={polygonOffset}
+                    polygonOffsetFactor={-1}
+                    polygonOffsetUnits={-1}
                 />
             )}
             <Geometry>
@@ -243,9 +249,11 @@ export const Table = memo(function Table() {
                 <CutSurface
                     size={[WOOD_RAIL_WIDTH, 2.2, WOOD_RAIL_LENGTH]}
                     opening={[GREEN_RAIL_WIDTH, GREEN_RAIL_LENGTH]}
-                    position={[0, 0.9, 0]}
+                    position={[0, 0.85, 0]}
                     color="#4b281b"
                     roughness={0.3}
+                    renderOrder={1}
+                    polygonOffset
                     angledPockets
                 />
             </RigidBody>

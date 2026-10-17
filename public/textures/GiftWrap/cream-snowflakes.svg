@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <pattern id="paper" width="64" height="64" patternUnits="userSpaceOnUse">
+      <rect width="64" height="64" fill="#f5e6c9"/>
+      <path d="M-16 0 64 80M16-16 80 48" stroke="#d4b277" stroke-width=".7" opacity=".55"/>
+      <g transform="translate(16 16)" fill="none" stroke="#a22b38" stroke-width="1.5" stroke-linecap="round">
+        <path d="M0-12V12M-10.4-6 10.4 6M-10.4 6 10.4-6"/>
+        <path d="M-3-9 0-6 3-9M-3 9 0 6 3 9M-9-1-5 0-6-4M9 1 5 0 6 4M-6 4-5 0-9 1M6-4 5 0 9-1"/>
+      </g>
+      <g transform="translate(48 48)">
+        <path d="M0-9 2.5-3 9-2 4 2 5 9 0 5-5 9-4 2-9-2-2.5-3Z" fill="#b99852"/>
+        <circle cx="-24" cy="0" r="1.4" fill="#2d6349"/>
+        <circle cx="0" cy="-24" r="1.4" fill="#2d6349"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="256" height="256" fill="url(#paper)"/>
+</svg>

@@ -1,105 +1,246 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTexture } from "@react-three/drei";
+import { Base, Geometry, Subtraction } from "@react-three/csg";
+import { RepeatWrapping } from "three";
+import { CeilingMaterial, WoodMaterial } from "./RoomMaterials";
+import { DoorCut } from "./doorway";
 
-import * as THREE from "three";
-import { degToRad } from "three/src/math/MathUtils";
+const FLOOR_Y = -30;
+const CEILING_Y = 70;
+const WALL_HEIGHT = CEILING_Y - FLOOR_Y;
+const WALL_CENTER_Y = (FLOOR_Y + CEILING_Y) / 2;
+const PANEL_HEIGHT = WALL_HEIGHT * 0.2;
+const WINDOW_WIDTH = 76;
+const WINDOW_HEIGHT = 50;
+const WINDOW_Y = 26;
+export const WINDOW_CENTERS = [-65, 65];
 
-export default function HallwayWalls() {
+function WoodBox({ position, size, color = "#ffffff", doorway }) {
     return (
-        <group position={[0, 0, 0]}>
-            <StoneBrickWall
-                // rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, 0, -150]}
-                args={[300, 150]}
+        <mesh
+            position={position}
+            castShadow
+            receiveShadow
+        >
+            {doorway ? (
+                <Geometry>
+                    <Base>
+                        <boxGeometry args={size} />
+                    </Base>
+                    <DoorCut
+                        wallPosition={doorway.position}
+                        wallRotation={doorway.rotation}
+                        origin={position}
+                    />
+                </Geometry>
+            ) : (
+                <boxGeometry args={size} />
+            )}
+            <WoodMaterial
+                width={size[0]}
+                height={size[1]}
+                color={color}
             />
+        </mesh>
+    );
+}
 
-            <StoneBrickWall
-                rotation={[0, 0, 0]}
-                invertFace={true}
-                position={[0, 0, 150]}
-                args={[300, 150]}
+function WindowFrame({ x }) {
+    const localY = WINDOW_Y - WALL_CENTER_Y;
+    return (
+        <group position={[x, localY, 0]}>
+            {[-1, 1].map((side) => (
+                <group key={side}>
+                    <WoodBox
+                        position={[side * (WINDOW_WIDTH / 2 + 1.5), 0, 0.5]}
+                        size={[3, WINDOW_HEIGHT + 6, 6]}
+                        color="#bfad99"
+                    />
+                    <WoodBox
+                        position={[0, side * (WINDOW_HEIGHT / 2 + 1.5), 0.5]}
+                        size={[WINDOW_WIDTH, 3, 6]}
+                        color="#bfad99"
+                    />
+                </group>
+            ))}
+            <WoodBox
+                position={[0, -WINDOW_HEIGHT / 2 - 2, 3]}
+                size={[WINDOW_WIDTH + 9, 2, 10]}
             />
-
-            <StoneBrickWall
-                rotation={[0, -Math.PI / 2, 0]}
-                position={[150, 0, 0]}
-                args={[300, 150]}
-            />
-
-            <StoneBrickWall
-                rotation={[0, -Math.PI / -2, 0]}
-                position={[-150, 0, 0]}
-                args={[300, 150]}
-            />
+            {/* Open panes keep the landscape and its lighting unobstructed. */}
+            <mesh
+                position={[0, 0, 0.5]}
+                castShadow
+                receiveShadow
+            >
+                <boxGeometry args={[1.25, WINDOW_HEIGHT, 2]} />
+                <meshStandardMaterial
+                    color="#302d29"
+                    roughness={0.5}
+                />
+            </mesh>
+            <mesh
+                position={[0, 0, 0.5]}
+                castShadow
+                receiveShadow
+            >
+                <boxGeometry args={[WINDOW_WIDTH, 1.25, 2]} />
+                <meshStandardMaterial
+                    color="#302d29"
+                    roughness={0.5}
+                />
+            </mesh>
         </group>
     );
 }
 
-function StoneBrickWall(props) {
-    const base_link = `textures/StoneBricks/`;
-
-    const textures = useTexture({
-        map: `${base_link}COL_1K.jpg`,
-        // displacementMap: `${base_link}StoneBricksSplitface001_DISP_1K.jpg`,
-        normalMap: `${base_link}NRM_1K.jpg`,
-        // roughnessMap: `${base_link}StoneBricksSplitface001_BUMP_1K.jpg`,
-        // aoMap: `${base_link}StoneBricksSplitface001_AO_1K.jpg`,
+export function StoneBrickWall({
+    position,
+    rotation,
+    windows = false,
+    doorway = false,
+    width = 300,
+    panelBothSides = false,
+}) {
+    const source = useTexture({
+        map: "/textures/StoneBricks/COL_1K.jpg",
+        normalMap: "/textures/StoneBricks/NRM_1K.jpg",
     });
-
-    const texture = useMemo(() => {
-        const cloned = { ...textures };
-        if (cloned.map) cloned.map = cloned.map.clone();
-        if (cloned.normalMap) cloned.normalMap = cloned.normalMap.clone();
-        return cloned;
-    }, [textures]);
-
-    Object.values(texture).forEach((t) => {
-        if (t instanceof THREE.Texture) {
-            t.wrapS = t.wrapT = THREE.RepeatWrapping;
-            t.repeat.set(5, 3.5);
+    const textures = useMemo(() => {
+        const copies = {};
+        for (const [name, texture] of Object.entries(source)) {
+            const copy = texture.clone();
+            copy.wrapS = copy.wrapT = RepeatWrapping;
+            copy.repeat.set(width / 50, 2);
+            copy.needsUpdate = true;
+            copies[name] = copy;
         }
-    });
-
-    // If invertFace is true, flip the plane by rotating 180 degrees around Y
-    const planeRotation = props.invertFace ? [0, Math.PI, 0] : [0, 0, 0];
+        return copies;
+    }, [source, width]);
+    useEffect(
+        () => () => {
+            Object.values(textures).forEach((texture) => texture.dispose());
+        },
+        [textures],
+    );
+    const doorWall = doorway ? { position, rotation } : undefined;
 
     return (
-        <group {...props}>
+        <group
+            position={position}
+            rotation={rotation}
+        >
             <mesh
+                castShadow
                 receiveShadow
-                rotation={planeRotation}
             >
-                <planeGeometry {...props} />
-                <meshStandardMaterial {...texture} />
+                <meshStandardMaterial
+                    {...textures}
+                    roughness={0.9}
+                />
+                <Geometry>
+                    <Base>
+                        <boxGeometry args={[width, WALL_HEIGHT, 4]} />
+                    </Base>
+                    {doorway && (
+                        <DoorCut
+                            wallPosition={position}
+                            wallRotation={rotation}
+                        />
+                    )}
+                    {windows &&
+                        WINDOW_CENTERS.map((x) => (
+                            <Subtraction
+                                key={x}
+                                position={[x, WINDOW_Y - WALL_CENTER_Y, 0]}
+                            >
+                                <boxGeometry
+                                    args={[WINDOW_WIDTH, WINDOW_HEIGHT, 10]}
+                                />
+                            </Subtraction>
+                        ))}
+                </Geometry>
             </mesh>
 
+            {(panelBothSides ? [-1, 1] : [1]).map((side) => (
+                <group key={side}>
+                    <WoodBox
+                        position={[
+                            0,
+                            FLOOR_Y + PANEL_HEIGHT / 2 - WALL_CENTER_Y,
+                            side * 2.75,
+                        ]}
+                        size={[width, PANEL_HEIGHT, 1.5]}
+                        doorway={doorWall}
+                    />
+                    <WoodBox
+                        position={[
+                            0,
+                            FLOOR_Y + PANEL_HEIGHT - WALL_CENTER_Y,
+                            side * 3.25,
+                        ]}
+                        size={[width, 1.5, 2.5]}
+                        color="#d9c4a8"
+                        doorway={doorWall}
+                    />
+                    <WoodBox
+                        position={[0, FLOOR_Y + 2 - WALL_CENTER_Y, side * 3.25]}
+                        size={[width, 4, 2.5]}
+                        color="#b8a18b"
+                        doorway={doorWall}
+                    />
+                    <WoodBox
+                        position={[
+                            0,
+                            CEILING_Y - 2.5 - WALL_CENTER_Y,
+                            side * 3,
+                        ]}
+                        size={[width, 5, 2]}
+                    />
+                </group>
+            ))}
+
+            {windows &&
+                WINDOW_CENTERS.map((x) => (
+                    <WindowFrame
+                        key={x}
+                        x={x}
+                    />
+                ))}
+        </group>
+    );
+}
+
+export default function RoomWalls() {
+    return (
+        <group>
+            <StoneBrickWall position={[0, WALL_CENTER_Y, -152]} />
+            <StoneBrickWall
+                position={[0, WALL_CENTER_Y, 152]}
+                rotation={[0, Math.PI, 0]}
+            />
+            <StoneBrickWall
+                position={[152, WALL_CENTER_Y, 0]}
+                rotation={[0, -Math.PI / 2, 0]}
+                windows
+            />
+            <StoneBrickWall
+                position={[-152, WALL_CENTER_Y, 0]}
+                rotation={[0, Math.PI / 2, 0]}
+                width={600}
+                panelBothSides
+                doorway
+            />
+
+            {/* The front face points down: orbiting above the room hides the ceiling. */}
             <mesh
-                position={[0, -55, props.invertFace ? -0.5 : 0.5]}
-                rotation={planeRotation}
+                position={[0, CEILING_Y, 0]}
+                rotation={[Math.PI / 2, 0, 0]}
+                castShadow
+                receiveShadow
             >
-                <planeGeometry args={[props.args[0], 20]} />
-                <meshStandardMaterial color={"saddlebrown"} />
-            </mesh>
-
-            <mesh
-                position={[0, 67.5, props.invertFace ? -0.5 : 0.5]}
-                rotation={planeRotation}
-            >
-                <planeGeometry args={[props.args[0], 5]} />
-                <meshStandardMaterial color={"saddlebrown"} />
-            </mesh>
-
-            <mesh position={[0, -70, 0]}>
-                <boxGeometry args={[props.args[0], 10]} />
-                <meshStandardMaterial color={"black"} />
-            </mesh>
-
-            <mesh
-                position={[0, 72.5, 0]}
-                rotation={[0, degToRad(0), 0]}
-            >
-                <boxGeometry args={[props.args[0], 5]} />
-                <meshStandardMaterial color={"black"} />
+                <planeGeometry args={[300, 300]} />
+                <CeilingMaterial />
             </mesh>
         </group>
     );

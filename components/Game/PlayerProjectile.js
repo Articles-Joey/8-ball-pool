@@ -56,7 +56,7 @@ export default function PlayerProjectile({ preview = false }) {
                 (state.cuePower - visual.current.power) * alpha;
         }
         if (cue.current) {
-            cue.current.position.z = 12 + (visual.current.power / 100) * 4;
+            cue.current.position.z = 14.5 + (visual.current.power / 100) * 4;
         }
     });
     if (preview)
@@ -93,14 +93,15 @@ export default function PlayerProjectile({ preview = false }) {
                             />
                         </mesh>
                     </mesh>
-                    <group rotation={[0, Math.PI, 0]}>
+                    {/* Raise the back of the cue so it clears the cushion and wood rail. */}
+                    <group rotation={[Math.PI / 12, Math.PI, 0]}>
                         <mesh
                             ref={cue}
-                            position={[0, 0, 12 + (power / 100) * 4]}
+                            position={[0, 0, 14.5 + (power / 100) * 4]}
                             rotation={[-Math.PI / 2, 0, 0]}
                             castShadow
                         >
-                            <cylinderGeometry args={[0.18, 0.3, 20, 24]} />
+                            <cylinderGeometry args={[0.18, 0.3, 25, 24]} />
                             <meshStandardMaterial
                                 color="#bc935f"
                                 roughness={0.4}

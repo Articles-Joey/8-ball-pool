@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <rect width="320" height="180" rx="9" fill="#fff3d7"/>
+  <rect x="7" y="7" width="306" height="166" rx="6" fill="none" stroke="#ad303b" stroke-width="3"/>
+  <rect x="13" y="13" width="294" height="154" rx="4" fill="none" stroke="#c3a362"/>
+  <text x="160" y="43" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="25" fill="#a52d38">Merry Christmas</text>
+  <path d="M36 56H284" stroke="#c3a362"/>
+  <text x="34" y="94" font-family="Georgia,serif" font-size="25" fill="#28573e">To: You</text>
+  <text x="34" y="137" font-family="Georgia,serif" font-size="25" fill="#28573e">From: Santa</text>
+  <path d="M84 101H279M112 144H279" stroke="#c7b992"/>
+  <g transform="translate(268 111)">
+    <path d="M0 3C-18 3-17-9-19-14L-11-12-10-20-3-14 4-18C8-8 7 0 0 3Z" fill="#2d6849"/>
+    <path d="M2 4C18 5 20-5 25-10L16-11 17-18 9-14 5-20C-1-12-2-3 2 4Z" fill="#397653"/>
+    <circle cx="-1" cy="5" r="5" fill="#bb3541"/>
+    <circle cx="7" cy="6" r="5" fill="#c74148"/>
+    <circle cx="3" cy="13" r="5" fill="#a52435"/>
+  </g>
+</svg>
